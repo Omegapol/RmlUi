@@ -55,6 +55,13 @@ public:
 	static bool Convert(const SourceType& src, DestType& dest);
 };
 
+template <typename SourceType, typename DestType>
+class TypeConverter<SourceType, const DestType>
+{
+public:
+	static bool Convert(const SourceType& src, const DestType& dest);
+};
+
 template<typename T>
 inline String ToString(const T& value, String default_value = String()) {
 	String result = default_value;

@@ -65,11 +65,53 @@ struct DataAddressEntry {
 };
 using DataAddress = Vector<DataAddressEntry>;
 
+
+
+struct VariablePointerImpl {
+	void *ptr = nullptr;
+	const void *cptr = nullptr;
+
+	VariablePointerImpl(void *p) : ptr(p) {};
+
+	VariablePointerImpl(const void *p) : cptr(p) {};
+
+	VariablePointerImpl *operator=(void *p) {
+		ptr = p;
+		return this;
+	};
+
+	VariablePointerImpl *operator=(const void *p) {
+		cptr = p;
+		return this;
+	};
+
+	operator void *() const { return ptr; };
+
+	explicit operator const void *() const { return cptr; };
+};
+
+typedef VariablePointerImpl VariablePointer;
+
+template<typename ObjectType, typename MemberType>
+struct VariablePointerGetter {
+	static void *Get(VariablePointer &ptr) {
+		return ptr.ptr;
+	}
+};
+
+template<typename ObjectType, typename MemberType>
+struct VariablePointerGetter<ObjectType, const MemberType> {
+	static const void *Get(VariablePointer &ptr) {
+		return ptr.cptr;
+	}
+};
+
+
 template<class T>
 struct PointerTraits {
 	using is_pointer = std::false_type;
 	using element_type = T;
-	static void* Dereference(void* ptr) {
+	static VariablePointer Dereference(VariablePointer ptr) {
 		return ptr;
 	}
 };
@@ -77,24 +119,30 @@ template<class T>
 struct PointerTraits<T*> {
 	using is_pointer = std::true_type;
 	using element_type = T;
-	static void* Dereference(void* ptr) {
-		return static_cast<void*>(*static_cast<T**>(ptr));
+	static VariablePointer Dereference(VariablePointer ptr) {
+		return static_cast<void*>(*static_cast<T**>(
+				VariablePointerGetter<T>::Get(ptr)
+				)->get());
 	}
 };
 template<class T>
 struct PointerTraits<UniquePtr<T>> {
 	using is_pointer = std::true_type;
 	using element_type = T;
-	static void* Dereference(void* ptr) {
-		return static_cast<void*>(static_cast<UniquePtr<T>*>(ptr)->get());
+	static VariablePointer Dereference(VariablePointer ptr) {
+		return static_cast<void*>(static_cast<UniquePtr<T>*>(
+				VariablePointerGetter<T>::Get(ptr)
+				)->get());
 	}
 };
 template<class T>
 struct PointerTraits<SharedPtr<T>> {
 	using is_pointer = std::true_type;
 	using element_type = T;
-	static void* Dereference(void* ptr) {
-		return static_cast<void*>(static_cast<SharedPtr<T>*>(ptr)->get());
+	static VariablePointer Dereference(VariablePointer ptr) {
+		return static_cast<void*>(static_cast<SharedPtr<T>*>(
+				VariablePointerGetter<T>::Get(ptr)
+				)->get());
 	}
 };
 

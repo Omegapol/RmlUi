@@ -50,7 +50,7 @@ enum class DataVariableType { Scalar, Array, Struct };
 class RMLUICORE_API DataVariable {
 public:
 	DataVariable() {}
-	DataVariable(VariableDefinition* definition, void* ptr) : definition(definition), ptr(ptr) {}
+	DataVariable(VariableDefinition* definition, VariablePointer ptr) : definition(definition), ptr(ptr) {}
 
 	explicit operator bool() const { return definition; }
 
@@ -62,7 +62,7 @@ public:
 
 private:
 	VariableDefinition* definition = nullptr;
-	void* ptr = nullptr;
+	VariablePointer ptr = (void*) nullptr;
 };
 
 
@@ -77,11 +77,11 @@ public:
 	virtual ~VariableDefinition() = default;
 	DataVariableType Type() const { return type; }
 
-	virtual bool Get(void* ptr, Variant& variant);
-	virtual bool Set(void* ptr, const Variant& variant);
+	virtual bool Get(VariablePointer ptr, Variant& variant);
+	virtual bool Set(VariablePointer ptr, const Variant& variant);
 
-	virtual int Size(void* ptr);
-	virtual DataVariable Child(void* ptr, const DataAddressEntry& address);
+	virtual int Size(VariablePointer ptr);
+	virtual DataVariable Child(VariablePointer ptr, const DataAddressEntry& address);
 
 protected:
 	VariableDefinition(DataVariableType type) : type(type) {}
@@ -99,14 +99,18 @@ class ScalarDefinition final : public VariableDefinition {
 public:
 	ScalarDefinition() : VariableDefinition(DataVariableType::Scalar) {}
 
-	bool Get(void* ptr, Variant& variant) override
+	bool Get(VariablePointer ptr, Variant& variant) override
 	{
-		variant = *static_cast<const T*>(ptr);
+		variant = *static_cast<const T*>(
+		        VariablePointerGetter<void, T>::Get(ptr)
+		        );
 		return true;
 	}
-	bool Set(void* ptr, const Variant& variant) override
+	bool Set(VariablePointer ptr, const Variant& variant) override
 	{
-		return variant.GetInto<T>(*static_cast<T*>(ptr));
+		return variant.GetInto<T>(*static_cast<T*>(
+				VariablePointerGetter<void, T>::Get(ptr)
+				));
 	}
 };
 
@@ -114,14 +118,14 @@ class FuncDefinition final : public VariableDefinition {
 public:
 	FuncDefinition(DataGetFunc get, DataSetFunc set) : VariableDefinition(DataVariableType::Scalar), get(std::move(get)), set(std::move(set)) {}
 
-	bool Get(void* /*ptr*/, Variant& variant) override
+	bool Get(VariablePointer /*ptr*/, Variant& variant) override
 	{
 		if (!get)
 			return false;
 		get(variant);
 		return true;
 	}
-	bool Set(void* /*ptr*/, const Variant& variant) override
+	bool Set(VariablePointer /*ptr*/, const Variant& variant) override
 	{
 		if (!set)
 			return false;
@@ -139,14 +143,14 @@ class ScalarFuncDefinition final : public VariableDefinition {
 public:
 	ScalarFuncDefinition(DataTypeGetFunc<T> get, DataTypeSetFunc<T> set) : VariableDefinition(DataVariableType::Scalar), get(get), set(set) {}
 
-	bool Get(void* ptr, Variant& variant) override
+	bool Get(VariablePointer ptr, Variant& variant) override
 	{
 		if (!get)
 			return false;
 		get(static_cast<const T*>(ptr), variant);
 		return true;
 	}
-	bool Set(void* ptr, const Variant& variant) override
+	bool Set(VariablePointer ptr, const Variant& variant) override
 	{
 		if (!set)
 			return false;
@@ -164,14 +168,16 @@ class ArrayDefinition final : public VariableDefinition {
 public:
 	ArrayDefinition(VariableDefinition* underlying_definition) : VariableDefinition(DataVariableType::Array), underlying_definition(underlying_definition) {}
 
-	int Size(void* ptr) override {
-		return int(static_cast<Container*>(ptr)->size());
+	int Size(VariablePointer ptr) override {
+		return int(static_cast<Container*>(VariablePointerGetter<void, Container>::Get(ptr))->size());
 	}
 
 protected:
-	DataVariable Child(void* void_ptr, const DataAddressEntry& address) override
+	DataVariable Child(VariablePointer void_ptr, const DataAddressEntry& address) override
 	{
-		Container* ptr = static_cast<Container*>(void_ptr);
+		Container* ptr = static_cast<Container*>(
+				VariablePointerGetter<void, Container>::Get(void_ptr)
+		);
 		const int index = address.index;
 
 		const int container_size = int(ptr->size());
@@ -187,7 +193,7 @@ protected:
 		auto it = ptr->begin();
 		std::advance(it, index);
 
-		void* next_ptr = &(*it);
+		VariablePointer next_ptr = &(*it);
 		return DataVariable(underlying_definition, next_ptr);
 	}
 
@@ -195,17 +201,17 @@ private:
 	VariableDefinition* underlying_definition;
 };
 
-class BasePointerDefinition : public VariableDefinition {
+class RMLUICORE_API BasePointerDefinition : public VariableDefinition {
 public:
 	BasePointerDefinition(VariableDefinition* underlying_definition) : VariableDefinition(underlying_definition->Type()), underlying_definition(underlying_definition) {}
 
-	bool Get(void* ptr, Variant& variant) override;
-	bool Set(void* ptr, const Variant& variant) override;
-	int Size(void* ptr) override;
-	DataVariable Child(void* ptr, const DataAddressEntry& address) override;
+	bool Get(VariablePointer ptr, Variant& variant) override;
+	bool Set(VariablePointer ptr, const Variant& variant) override;
+	int Size(VariablePointer ptr) override;
+	DataVariable Child(VariablePointer ptr, const DataAddressEntry& address) override;
 
 protected:
-	virtual void* DereferencePointer(void* ptr) = 0;
+	virtual VariablePointer DereferencePointer(VariablePointer ptr) = 0;
 
 private:
 	VariableDefinition* underlying_definition;
@@ -217,7 +223,7 @@ public:
 	PointerDefinition(VariableDefinition* underlying_definition) : BasePointerDefinition(underlying_definition) {}
 
 protected:
-	void* DereferencePointer(void* ptr) override
+	VariablePointer DereferencePointer(VariablePointer ptr) override
 	{
 		return PointerTraits<T>::Dereference(ptr);
 	}
@@ -229,7 +235,7 @@ public:
 	StructDefinition() : VariableDefinition(DataVariableType::Struct)
 	{}
 
-	DataVariable Child(void* ptr, const DataAddressEntry& address) override
+	DataVariable Child(VariablePointer ptr, const DataAddressEntry& address) override
 	{
 		const String& name = address.name;
 		if (name.empty())
@@ -270,9 +276,12 @@ public:
 	MemberObjectDefinition(VariableDefinition* underlying_definition, MemberType Object::* member_ptr) : BasePointerDefinition(underlying_definition), member_ptr(member_ptr) {}
 
 protected:
-	void* DereferencePointer(void* base_ptr) override
+	VariablePointer DereferencePointer(VariablePointer base_ptr) override
 	{
-		return &(static_cast<Object*>(base_ptr)->*member_ptr);
+		auto& var = (static_cast<Object*>(
+							 VariablePointerGetter<void, Object>::Get(base_ptr)
+					 )->*member_ptr);
+		return &var;
 	}
 
 private:
@@ -292,9 +301,11 @@ public:
 	}
 
 protected:
-	void* DereferencePointer(void* base_ptr) override
+	VariablePointer DereferencePointer(VariablePointer base_ptr) override
 	{
-		return static_cast<void*>(Extract((static_cast<Object*>(base_ptr)->*member_get_func_ptr)()));
+		return static_cast<VariablePointer>(Extract((static_cast<Object*>(
+                     VariablePointerGetter<void, Object>::Get(base_ptr)
+		        )->*member_get_func_ptr)()));
 	}
 
 private:
@@ -320,48 +331,50 @@ public:
 		static_assert(std::is_member_function_pointer<MemberGetFunctionPtr>::value, "Must be a member function pointer");
 	}
 
-	bool Get(void* ptr, Variant& variant) override
+	bool Get(VariablePointer ptr, Variant& variant) override
 	{
 		return GetDetail(ptr, variant);
 	}
-	bool Set(void* ptr, const Variant& variant) override
+	bool Set(VariablePointer ptr, const Variant& variant) override
 	{
 		return SetDetail(ptr, variant);
 	}
 
 private:
 	template<typename T = MemberGetType, typename std::enable_if<std::is_null_pointer<T>::value, int>::type = 0>
-	bool GetDetail(void* /*ptr*/, Variant& /*variant*/)
+	bool GetDetail(VariablePointer /*ptr*/, Variant& /*variant*/)
 	{
 		return false;
 	}
 
 	template<typename T = MemberGetType, typename std::enable_if<!std::is_null_pointer<T>::value, int>::type = 0>
-	bool GetDetail(void* ptr, Variant& variant)
+	bool GetDetail(VariablePointer ptr, Variant& variant)
 	{
 		if (!member_get_func_ptr)
 			return false;
 
 		// TODO: Does this work for pointers?
-		auto&& value = (static_cast<Object*>(ptr)->*member_get_func_ptr)();
-		bool result = underlying_definition->Get(static_cast<void*>(&value), variant);
+		auto&& value = (static_cast<Object*>(
+				VariablePointerGetter<void, Object>::Get(ptr)
+				)->*member_get_func_ptr)();
+		bool result = underlying_definition->Get(static_cast<VariablePointer>(&value), variant);
 		return result;
 	}
 
 	template<typename T = MemberSetType, typename std::enable_if<std::is_null_pointer<T>::value, int>::type = 0>
-	bool SetDetail(void* /*ptr*/, const Variant& /*variant*/)
+	bool SetDetail(VariablePointer /*ptr*/, const Variant& /*variant*/)
 	{
 		return false;
 	}
 
 	template<typename T = MemberSetType, typename std::enable_if<!std::is_null_pointer<T>::value, int>::type = 0>
-	bool SetDetail(void* ptr, const Variant& variant)
+	bool SetDetail(VariablePointer ptr, const Variant& variant)
 	{
 		if (!member_set_func_ptr)
 			return false;
 
 		UnderlyingType result;
-		if (!underlying_definition->Set(static_cast<void*>(&result), variant))
+		if (!underlying_definition->Set(static_cast<VariablePointer>(&result), variant))
 			return false;
 
 		(static_cast<Object*>(ptr)->*member_set_func_ptr)(result);

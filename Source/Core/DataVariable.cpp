@@ -51,19 +51,19 @@ DataVariableType DataVariable::Type() {
 }
 
 
-bool VariableDefinition::Get(void* /*ptr*/, Variant& /*variant*/) {
+bool VariableDefinition::Get(VariablePointer /*ptr*/, Variant& /*variant*/) {
     Log::Message(Log::LT_WARNING, "Values can only be retrieved from scalar data types.");
     return false;
 }
-bool VariableDefinition::Set(void* /*ptr*/, const Variant& /*variant*/) {
+bool VariableDefinition::Set(VariablePointer /*ptr*/, const Variant& /*variant*/) {
     Log::Message(Log::LT_WARNING, "Values can only be assigned to scalar data types.");
     return false;
 }
-int VariableDefinition::Size(void* /*ptr*/) {
+int VariableDefinition::Size(VariablePointer /*ptr*/) {
     Log::Message(Log::LT_WARNING, "Tried to get the size from a non-array data type.");
     return 0;
 }
-DataVariable VariableDefinition::Child(void* /*ptr*/, const DataAddressEntry& /*address*/) {
+DataVariable VariableDefinition::Child(VariablePointer /*ptr*/, const DataAddressEntry& /*address*/) {
     Log::Message(Log::LT_WARNING, "Tried to get the child of a scalar type.");
     return DataVariable();
 }
@@ -72,9 +72,9 @@ class LiteralIntDefinition final : public VariableDefinition {
 public:
     LiteralIntDefinition() : VariableDefinition(DataVariableType::Scalar) {}
 
-    bool Get(void* ptr, Variant& variant) override
+    bool Get(VariablePointer ptr, Variant& variant) override
     {
-        variant = static_cast<int>(reinterpret_cast<intptr_t>(ptr));
+        variant = static_cast<int>(reinterpret_cast<intptr_t>(ptr.ptr));
         return true;
     }
 };
@@ -85,20 +85,19 @@ DataVariable MakeLiteralIntVariable(int value)
     return DataVariable(&literal_int_definition, reinterpret_cast<void*>(static_cast<intptr_t>(value)));
 }
 
-bool BasePointerDefinition::Get(void* ptr, Variant& variant) {
+bool BasePointerDefinition::Get(VariablePointer ptr, Variant& variant) {
     return underlying_definition->Get(DereferencePointer(ptr), variant);
 }
 
-bool BasePointerDefinition::Set(void* ptr, const Variant& variant) {
+bool BasePointerDefinition::Set(VariablePointer ptr, const Variant& variant) {
     return underlying_definition->Set(DereferencePointer(ptr), variant);
 }
 
-int BasePointerDefinition::Size(void* ptr) {
+int BasePointerDefinition::Size(VariablePointer ptr) {
     return underlying_definition->Size(DereferencePointer(ptr));
 }
 
-DataVariable BasePointerDefinition::Child(void* ptr, const DataAddressEntry& address) {
-    // TODO: Return the constness of T?
+DataVariable BasePointerDefinition::Child(VariablePointer ptr, const DataAddressEntry& address) {
     return underlying_definition->Child(DereferencePointer(ptr), address);
 }
 

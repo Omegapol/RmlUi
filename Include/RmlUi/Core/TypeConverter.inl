@@ -35,6 +35,13 @@ bool TypeConverter<SourceType, DestType>::Convert(const SourceType& /*src*/, Des
 	return false;
 }
 
+template <typename SourceType, typename DestType>
+bool TypeConverter<SourceType, const DestType>::Convert(const SourceType& /*src*/, const DestType& /*dest*/)
+{
+	RMLUI_ERRORMSG("Can't assign to const object.");
+	return false;
+}
+
 #if defined(RMLUI_PLATFORM_WIN32) && defined(__MINGW32__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat"

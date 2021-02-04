@@ -177,7 +177,7 @@ bool DataModel::BindFunc(const String& name, DataGetFunc get_func, DataSetFunc s
 	auto& func_definition_ptr = it->second;
 	func_definition_ptr = MakeUnique<FuncDefinition>(std::move(get_func), std::move(set_func));
 
-	return BindVariable(name, DataVariable(func_definition_ptr.get(), nullptr));
+	return BindVariable(name, DataVariable(func_definition_ptr.get(), (void*) nullptr));
 }
 
 bool DataModel::BindEventCallback(const String& name, DataEventFunc event_func)
