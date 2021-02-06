@@ -133,6 +133,16 @@ struct PointerTraits<T*> {
 	}
 };
 template<class T>
+struct PointerTraits<const T*> {
+	using is_pointer = std::true_type;
+	using element_type = T;
+	static VariablePointer Dereference(VariablePointer ptr) {
+		return static_cast<const void*>(*static_cast<const T**>(
+				VariablePointerGetter<void, T>::Get(ptr)
+				));
+	}
+};
+template<class T>
 struct PointerTraits<UniquePtr<T>> {
 	using is_pointer = std::true_type;
 	using element_type = T;

@@ -163,6 +163,17 @@ private:
 	DataTypeSetFunc<T> set;
 };
 
+
+template<typename T>
+struct RemoveConstPointer
+{
+	using type = T;
+};
+template<typename T>
+struct RemoveConstPointer<T* const>
+{
+	using type = T*;
+};
 template<typename T>
 struct PointerType
 {
@@ -187,7 +198,8 @@ protected:
 	DataVariable Child(VariablePointer void_ptr, const DataAddressEntry& address) override
 	{
 		using iterator_type = decltype(std::declval<Container>().begin());
-		using value_type = typename std::remove_reference<decltype(*std::declval<iterator_type>())>::type;
+		using raw_value_type = typename std::remove_reference<decltype(*std::declval<iterator_type>())>::type;
+		using value_type = typename PointerType<raw_value_type>::type;
 
 		Container* ptr = static_cast<Container*>(
 				VariablePointerGetter<void, Container>::Get(void_ptr)
@@ -208,7 +220,7 @@ protected:
 		std::advance(it, index);
 		auto& value = *it;
 
-		VariablePointer next_ptr = &static_cast<typename PointerType<value_type>::type>(value);
+		VariablePointer next_ptr = &static_cast<value_type>(value);
 		return DataVariable(underlying_definition, next_ptr);
 	}
 

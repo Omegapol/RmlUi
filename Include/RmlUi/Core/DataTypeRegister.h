@@ -243,7 +243,9 @@ public:
 	bool RegisterArrayImpl()
 	{
 		using iterator_type = decltype(std::declval<Container>().begin());
-		using value_type = typename std::remove_reference<decltype(*std::declval<iterator_type>())>::type;
+		using raw_value_type = typename std::remove_reference<decltype(*std::declval<iterator_type>())>::type;
+		using value_type = typename RemoveConstPointer<raw_value_type>::type;
+		
 		VariableDefinition* value_variable = GetDefinitionDetail<value_type>();
 		RMLUI_LOG_TYPE_ERROR_ASSERT(value_type, value_variable, "Underlying value type of array has not been registered.");
 		if (!value_variable)
@@ -341,7 +343,6 @@ private:
 
 		using UnderlyingType = typename PointerTraits<T>::element_type;
 		static_assert(!PointerTraits<UnderlyingType>::is_pointer::value, "Recursive pointer types (pointer to pointer) to data variables are disallowed.");
-		static_assert(!std::is_const<UnderlyingType>::value, "Pointer to a const data variable is not supported.");
 
 		// Get the underlying definition.
 		VariableDefinition* underlying_definition = GetDefinitionDetail<UnderlyingType>();
