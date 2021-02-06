@@ -106,6 +106,13 @@ struct VariablePointerGetter<ObjectType, const MemberType> {
 	}
 };
 
+//template<typename ObjectType, typename MemberType>
+//struct VariablePointerGetter<ObjectType, MemberType* const> {
+//	static void * const Get(VariablePointer &ptr) {
+//		return ptr.cptr;
+//	}
+//};
+
 
 template<class T>
 struct PointerTraits {
@@ -121,8 +128,8 @@ struct PointerTraits<T*> {
 	using element_type = T;
 	static VariablePointer Dereference(VariablePointer ptr) {
 		return static_cast<void*>(*static_cast<T**>(
-				VariablePointerGetter<T>::Get(ptr)
-				)->get());
+				VariablePointerGetter<void, T>::Get(ptr)
+				));
 	}
 };
 template<class T>
@@ -131,7 +138,7 @@ struct PointerTraits<UniquePtr<T>> {
 	using element_type = T;
 	static VariablePointer Dereference(VariablePointer ptr) {
 		return static_cast<void*>(static_cast<UniquePtr<T>*>(
-				VariablePointerGetter<T>::Get(ptr)
+				VariablePointerGetter<void, T>::Get(ptr)
 				)->get());
 	}
 };
@@ -141,7 +148,7 @@ struct PointerTraits<SharedPtr<T>> {
 	using element_type = T;
 	static VariablePointer Dereference(VariablePointer ptr) {
 		return static_cast<void*>(static_cast<SharedPtr<T>*>(
-				VariablePointerGetter<T>::Get(ptr)
+				VariablePointerGetter<void, T>::Get(ptr)
 				)->get());
 	}
 };

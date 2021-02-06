@@ -163,6 +163,17 @@ private:
 	DataTypeSetFunc<T> set;
 };
 
+template<typename T>
+struct PointerType
+{
+	using type = T&;
+};
+template<typename T>
+struct PointerType<T* const>
+{
+	using type = T*;
+};
+
 template<typename Container>
 class ArrayDefinition final : public VariableDefinition {
 public:
@@ -175,6 +186,9 @@ public:
 protected:
 	DataVariable Child(VariablePointer void_ptr, const DataAddressEntry& address) override
 	{
+		using iterator_type = decltype(std::declval<Container>().begin());
+		using value_type = typename std::remove_reference<decltype(*std::declval<iterator_type>())>::type;
+
 		Container* ptr = static_cast<Container*>(
 				VariablePointerGetter<void, Container>::Get(void_ptr)
 		);
@@ -189,11 +203,12 @@ protected:
 			Log::Message(Log::LT_WARNING, "Data array index out of bounds.");
 			return DataVariable();
 		}
-
+		
 		auto it = ptr->begin();
 		std::advance(it, index);
+		auto& value = *it;
 
-		VariablePointer next_ptr = &(*it);
+		VariablePointer next_ptr = &static_cast<typename PointerType<value_type>::type>(value);
 		return DataVariable(underlying_definition, next_ptr);
 	}
 

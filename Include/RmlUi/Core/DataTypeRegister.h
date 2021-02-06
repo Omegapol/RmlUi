@@ -242,7 +242,8 @@ public:
 	template<typename Container>
 	bool RegisterArrayImpl()
 	{
-		using value_type = typename Container::value_type;
+		using iterator_type = decltype(std::declval<Container>().begin());
+		using value_type = typename std::remove_reference<decltype(*std::declval<iterator_type>())>::type;
 		VariableDefinition* value_variable = GetDefinitionDetail<value_type>();
 		RMLUI_LOG_TYPE_ERROR_ASSERT(value_type, value_variable, "Underlying value type of array has not been registered.");
 		if (!value_variable)
