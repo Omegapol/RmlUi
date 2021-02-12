@@ -85,38 +85,6 @@ DataVariable MakeLiteralIntVariable(int value)
     return DataVariable(&literal_int_definition, reinterpret_cast<const void*>(static_cast<intptr_t>(value)));
 }
 
-StructDefinition::StructDefinition() : VariableDefinition(DataVariableType::Struct)
-{}
-
-DataVariable StructDefinition::Child(DataPointer ptr, const DataAddressEntry& address)
-{
-    const String& name = address.name;
-    if (name.empty())
-    {
-        Log::Message(Log::LT_WARNING, "Expected a struct member name but none given.");
-        return DataVariable();
-    }
-
-    auto it = members.find(name);
-    if (it == members.end())
-    {
-        Log::Message(Log::LT_WARNING, "Member %s not found in data struct.", name.c_str());
-        return DataVariable();
-    }
-
-    VariableDefinition* next_definition = it->second.get();
-
-    return DataVariable(next_definition, ptr);
-}
-
-void StructDefinition::AddMember(const String& name, UniquePtr<VariableDefinition> member)
-{
-    RMLUI_ASSERT(member);
-    bool inserted = members.emplace(name, std::move(member)).second;
-    RMLUI_ASSERTMSG(inserted, "Member name already exists.");
-    (void)inserted;
-}
-
 FuncDefinition::FuncDefinition(DataGetFunc get, DataSetFunc set)
     : VariableDefinition(DataVariableType::Scalar), get(std::move(get)), set(std::move(set)) {}
 
