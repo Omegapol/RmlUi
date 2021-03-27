@@ -34,7 +34,7 @@
 
 namespace Rml {
 
-static DataAddress ParseAddress(const String& address_str)
+DataAddress ParseAddress(const String& address_str)
 {
 	StringList list;
 	StringUtilities::ExpandString(list, address_str, '.');

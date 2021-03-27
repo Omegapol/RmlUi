@@ -32,6 +32,14 @@
 #include <Shell.h>
 #include <RmlUi/Core/RenderInterface.h>
 
+class TestException: public std::exception
+{
+public:
+	TestException(const char *string);
+};
+
+extern bool rml_stop_on_asserts;
+extern bool rml_throw_on_errors;
 
 class TestsSystemInterface : public ShellSystemInterface
 {

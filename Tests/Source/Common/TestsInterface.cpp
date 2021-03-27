@@ -29,12 +29,22 @@
 #include "TestsInterface.h"
 #include <doctest.h>
 
+bool rml_stop_on_asserts = true;
+bool rml_throw_on_errors = false;
+
 
 bool TestsSystemInterface::LogMessage(Rml::Log::Type type, const Rml::String& message)
 {
 	static const char* message_type_str[Rml::Log::Type::LT_MAX] = { "Always", "Error", "Assert", "Warning", "Info", "Debug" };
-	bool result = Rml::SystemInterface::LogMessage(type, message);
-	CHECK_MESSAGE(type >= Rml::Log::Type::LT_INFO, "RmlUi " << message_type_str[type] << ": " << message);
+	auto s_type = type;
+	if(!rml_stop_on_asserts && type == Rml::Log::LT_ASSERT)
+		s_type = Rml::Log::LT_ERROR;
+	bool result = Rml::SystemInterface::LogMessage(s_type, message);
+	if(rml_throw_on_errors && type < Rml::Log::Type::LT_INFO)
+		throw TestException(message.c_str());
+	else
+		CHECK_MESSAGE(type >= Rml::Log::Type::LT_INFO, message.c_str());
+
 	return result;
 }
 
@@ -78,4 +88,8 @@ void TestsRenderInterface::ReleaseTexture(Rml::TextureHandle /*texture_handle*/)
 void TestsRenderInterface::SetTransform(const Rml::Matrix4f* /*transform*/)
 {
 	counters.set_transform += 1;
+}
+
+TestException::TestException(const char *string) : exception(string) {
+
 }

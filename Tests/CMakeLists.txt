@@ -44,6 +44,10 @@ if(MSVC)
 	target_compile_definitions(UnitTests PUBLIC DOCTEST_CONFIG_USE_STD_HEADERS)
 endif()
 
+include_directories(${PROJECT_SOURCE_DIR}/Source)
+
+add_definitions( -DRMLUI_UNITTESTS_ENABLED=1)
+
 doctest_discover_tests(UnitTests)
 
 

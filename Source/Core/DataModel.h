@@ -42,6 +42,8 @@ class DataVariable;
 class Element;
 class FuncDefinition;
 
+DataAddress ParseAddress(const String& address_str);
+
 
 class DataModel : NonCopyMoveable {
 public:

@@ -51,6 +51,9 @@ public:
 	explicit operator bool() { return model; }
 
 private:
+#ifdef RMLUI_UNITTESTS_ENABLED
+public:
+#endif
 	DataModel* model;
 };
 
