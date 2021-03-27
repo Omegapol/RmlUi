@@ -123,6 +123,15 @@ public:
 	explicit operator bool() { return model && type_register; }
 
 private:
+	template<typename T>
+	bool RegisterScalarImpl(DataTypeGetFunc<T> get_func, DataTypeSetFunc<T> set_func = {});
+
+	template<typename T>
+	StructDefinition* RegisterStructImpl();
+
+	template<typename Container>
+	bool RegisterArrayImpl();
+
 	bool BindVariable(const String& name, DataVariable data_variable);
 
 	DataModel* model;
@@ -132,6 +141,14 @@ private:
 
 template<typename T>
 inline bool DataModelConstructor::RegisterScalar(DataTypeGetFunc<T> get_func, DataTypeSetFunc<T> set_func)
+{
+	return RegisterScalarImpl<T>(get_func, set_func)
+		   &&
+		   RegisterScalarImpl<const T>(get_func, set_func);
+}
+
+template<typename T>
+inline bool DataModelConstructor::RegisterScalarImpl(DataTypeGetFunc<T> get_func, DataTypeSetFunc<T> set_func)
 {
 	static_assert(!is_builtin_data_scalar<T>::value, "Cannot register scalar data type function. Arithmetic types and String are handled internally and does not need to be registered.");
 	const FamilyId id = Family<T>::Id();
@@ -144,12 +161,11 @@ inline bool DataModelConstructor::RegisterScalar(DataTypeGetFunc<T> get_func, Da
 		RMLUI_LOG_TYPE_ERROR(T, "Scalar function type already registered.");
 		return false;
 	}
-
 	return true;
 }
 
 template<typename T>
-inline StructHandle<T> DataModelConstructor::RegisterStruct()
+inline StructDefinition* DataModelConstructor::RegisterStructImpl()
 {
 	static_assert(std::is_class<T>::value, "Type must be a struct or class type.");
 	const FamilyId id = Family<T>::Id();
@@ -161,16 +177,28 @@ inline StructHandle<T> DataModelConstructor::RegisterStruct()
 	if (!inserted)
 	{
 		RMLUI_LOG_TYPE_ERROR(T, "Struct type already declared");
-		return StructHandle<T>(nullptr, nullptr);
+		return nullptr;
 	}
 
-	return StructHandle<T>(type_register, struct_variable_raw);
+	return struct_variable_raw;
+}
+
+template<typename T>
+inline StructHandle<T> DataModelConstructor::RegisterStruct()
+{
+	auto struct_variable_raw = RegisterStructImpl<T>();
+	if(!struct_variable_raw)
+		return StructHandle<T>(nullptr, nullptr, nullptr);
+	auto struct_variable_raw_const = RegisterStructImpl<const T>();
+	if(!struct_variable_raw_const)
+		return StructHandle<T>(nullptr, nullptr, nullptr);
+	return StructHandle<T>(type_register, struct_variable_raw, struct_variable_raw_const);
 }
 
 template<typename Container>
-inline bool DataModelConstructor::RegisterArray()
+inline bool DataModelConstructor::RegisterArrayImpl()
 {
-	using value_type = typename Container::value_type;
+	using value_type = typename ArrayDefinition<Container>::value_type;
 	VariableDefinition* value_variable = type_register->GetDefinition<value_type>();
 	RMLUI_LOG_TYPE_ERROR_ASSERT(value_type, value_variable, "Underlying value type of array has not been registered.");
 	if (!value_variable)
@@ -188,6 +216,14 @@ inline bool DataModelConstructor::RegisterArray()
 
 	return true;
 }
+
+template<typename Container>
+inline bool DataModelConstructor::RegisterArray()
+{
+	return RegisterArrayImpl<Container>() &&
+		   RegisterArrayImpl<const Container>();
+}
+
 
 } // namespace Rml
 

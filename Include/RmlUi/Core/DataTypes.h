@@ -101,11 +101,35 @@ struct PointerTraits<T*> {
 	}
 };
 template<class T>
+struct PointerTraits<T* const> {
+	using is_pointer = std::true_type;
+	using element_type = T;
+	static DataPointer Dereference(DataPointer ptr) {
+		return DataPointer(*ptr.Get<T* const*>());
+	}
+};
+template<class T>
 struct PointerTraits<UniquePtr<T>> {
 	using is_pointer = std::true_type;
 	using element_type = T;
 	static DataPointer Dereference(DataPointer ptr) {
 		return DataPointer(ptr.Get<UniquePtr<T>*>()->get());
+	}
+};
+template<class T>
+struct PointerTraits<UniquePtr<T> const> {
+	using is_pointer = std::true_type;
+	using element_type = T;
+	static DataPointer Dereference(DataPointer ptr) {
+		return DataPointer(ptr.Get<UniquePtr<T> const* const>()->get());
+	}
+};
+template<class T>
+struct PointerTraits<SharedPtr<T> const> {
+	using is_pointer = std::true_type;
+	using element_type = T;
+	static DataPointer Dereference(DataPointer ptr) {
+		return DataPointer(ptr.Get<SharedPtr<T> const* const>()->get());
 	}
 };
 template<class T>

@@ -188,9 +188,63 @@ private:
 	SmallUnorderedMap<String, UniquePtr<VariableDefinition>> members;
 };
 
+template<typename T>
+struct PointerType
+{
+	using type = T&;
+
+	template<typename K>
+	static type Get(K source)
+	{
+		return *source;
+	}
+};
+template<typename T>
+struct PointerType<T* const>
+{
+	using type = T*;
+};
+template<typename T>
+struct PointerType<const T*>
+{
+	using type = const T*;
+};
+
+template<typename T>
+struct PointerType<const T* const>
+{
+	using type = const T*;
+};
+
+template<typename T>
+struct RemoveConstPointer
+{
+	using type = T;
+};
+template<typename T>
+struct RemoveConstPointer<T* const>
+{
+	using type = T*;
+};
+template<typename T>
+struct RemoveConstPointer<const UniquePtr<T>>
+{
+	using type = UniquePtr<T>;
+};
+template<typename T>
+struct RemoveConstPointer<const T* const>
+{
+	using type = const T*;
+};
+
 template<typename Container>
 class ArrayDefinition final : public VariableDefinition {
 public:
+	using iterator_type = decltype(std::declval<Container>().begin());
+	using raw_value_type = typename std::remove_reference<decltype(*std::declval<iterator_type>())>::type;
+	using value_type = typename RemoveConstPointer<raw_value_type>::type;
+	using ref_type = typename PointerType<raw_value_type>::type;
+
 	ArrayDefinition(VariableDefinition* underlying_definition) : VariableDefinition(DataVariableType::Array) , underlying_definition(underlying_definition) {}
 
 	int Size(DataPointer ptr) override {
@@ -215,12 +269,34 @@ protected:
 
 		auto it = ptr->begin();
 		std::advance(it, index);
-
-		DataPointer next_ptr = &(*it);
+		DataPointer next_ptr = get<ref_type>(it);
 		return DataVariable(underlying_definition, next_ptr);
 	}
 
 private:
+	template<typename ref_type, typename std::enable_if_t<
+			PointerTraits<ref_type>::is_pointer::value &&
+			!std::is_const<ref_type>::value, bool> = true>
+	DataPointer get(iterator_type& it)
+	{
+		auto &&res = &*it;
+		return res;
+	}
+
+	template<typename ref_type, typename std::enable_if_t<
+			PointerTraits<ref_type>::is_pointer::value &&
+			std::is_const<ref_type>::value, bool> = true>
+	DataPointer get(iterator_type& it)
+	{
+		return &static_cast<ref_type>(*it);
+	}
+
+	template<typename ref_type, typename std::enable_if_t<!PointerTraits<ref_type>::is_pointer::value, bool> = true>
+	DataPointer get(iterator_type& it)
+	{
+		return &static_cast<ref_type>(*it);
+	}
+
 	VariableDefinition* underlying_definition;
 };
 
@@ -248,7 +324,7 @@ public:
 
 protected:
 	DataPointer DereferencePointer(DataPointer ptr) override {
-		return PointerTraits<T>::Dereference(ptr);
+		return PointerTraits<T const>::Dereference(ptr);
 	}
 };
 

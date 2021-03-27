@@ -44,6 +44,30 @@ struct is_builtin_data_scalar {
 		|| std::is_same<typename std::remove_const<T>::type, String>::value;
 };
 
+template<typename Source, typename T>
+struct get_definition_type
+{
+	using type = T;
+};
+
+template<typename Source, typename T>
+struct get_definition_type<const Source, T>
+{
+	using type = const T;
+};
+
+template<typename Source, typename T>
+struct get_definition_type<const Source, T* const>
+{
+	using type = T*;
+};
+
+template<typename Source, typename T>
+struct get_definition_type<const Source, const UniquePtr<T>>
+{
+	using type = UniquePtr<T>;
+};
+
 
 class RMLUICORE_API TransformFuncRegister {
 public:
@@ -66,10 +90,10 @@ public:
 		return inserted;
 	}
 
-	template<typename T>
+	template<typename T, typename Source = void>
 	VariableDefinition* GetDefinition()
 	{
-		return GetDefinitionDetail<T>();
+		return GetDefinitionDetail<get_definition_type<Source, T>::type>();
 	}
 
 	inline TransformFuncRegister* GetTransformFuncRegister() {
