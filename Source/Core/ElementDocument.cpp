@@ -33,6 +33,7 @@
 #include "../../Include/RmlUi/Core/Profiling.h"
 #include "../../Include/RmlUi/Core/StreamMemory.h"
 #include "../../Include/RmlUi/Core/StyleSheet.h"
+#include "../../Include/RmlUi/Core/StyleSheetContainer.h"
 #include "DocumentHeader.h"
 #include "ElementStyle.h"
 #include "EventDispatcher.h"
@@ -47,7 +48,6 @@ namespace Rml {
 
 ElementDocument::ElementDocument(const String& tag) : Element(tag)
 {
-	style_sheet = nullptr;
 	context = nullptr;
 
 	modal = false;
@@ -95,24 +95,21 @@ void ElementDocument::ProcessHeader(const DocumentHeader* document_header)
 
 	// If a style-sheet (or sheets) has been specified for this element, then we load them and set the combined sheet
 	// on the element; all of its children will inherit it by default.
-	SharedPtr<StyleSheet> new_style_sheet;
+	SharedPtr<StyleSheetContainer> new_style_sheet;
 
 	// Combine any inline sheets.
 	for (const DocumentHeader::Resource& rcss : header.rcss)
 	{
 		if (rcss.is_inline)
 		{
-			UniquePtr<StyleSheet> inline_sheet = MakeUnique<StyleSheet>();
+			auto inline_sheet = MakeShared<StyleSheetContainer>();
 			auto stream = MakeUnique<StreamMemory>((const byte*)rcss.content.c_str(), rcss.content.size());
 			stream->SetSourceURL(rcss.path);
 
-			if (inline_sheet->LoadStyleSheet(stream.get(), rcss.line))
+			if (inline_sheet->LoadStyleSheetContainer(stream.get(), rcss.line))
 			{
 				if (new_style_sheet)
-				{
-					SharedPtr<StyleSheet> combined_sheet = new_style_sheet->CombineStyleSheet(*inline_sheet);
-					new_style_sheet = combined_sheet;
-				}
+					new_style_sheet->MergeStyleSheetContainer(*inline_sheet);
 				else
 					new_style_sheet = std::move(inline_sheet);
 			}
@@ -121,27 +118,22 @@ void ElementDocument::ProcessHeader(const DocumentHeader* document_header)
 		}
 		else
 		{
-			SharedPtr<StyleSheet> sub_sheet = StyleSheetFactory::GetStyleSheet(rcss.path);
+			const StyleSheetContainer* sub_sheet = StyleSheetFactory::GetStyleSheetContainer(rcss.path);
 			if (sub_sheet)
 			{
 				if (new_style_sheet)
-				{
-					SharedPtr<StyleSheet> combined_sheet = new_style_sheet->CombineStyleSheet(*sub_sheet);
-					new_style_sheet = std::move(combined_sheet);
-				}
+					new_style_sheet->MergeStyleSheetContainer(*sub_sheet);
 				else
-					new_style_sheet = sub_sheet;
+					new_style_sheet = sub_sheet->CombineStyleSheetContainer(StyleSheetContainer());
 			}
 			else
 				Log::Message(Log::LT_ERROR, "Failed to load style sheet %s.", rcss.path.c_str());
 		}
 	}
 
-	// If a style sheet is available, set it on the document and release it.
+	// If a style sheet is available, set it on the document.
 	if (new_style_sheet)
-	{
-		SetStyleSheet(std::move(new_style_sheet));
-	}
+		SetStyleSheetContainer(std::move(new_style_sheet));
 
 	// Load scripts.
 	for (const DocumentHeader::Resource& script : header.scripts)
@@ -188,29 +180,31 @@ const String& ElementDocument::GetSourceURL() const
 	return source_url;
 }
 
+// Returns the document's style sheet.
+const StyleSheet* ElementDocument::GetStyleSheet() const
+{
+	if (style_sheet_container)
+		return style_sheet_container->GetCompiledStyleSheet();
+	return nullptr;
+}
+
+// Returns the document's style sheet container.
+const StyleSheetContainer* ElementDocument::GetStyleSheetContainer() const
+{
+	return style_sheet_container.get();
+}
+
 // Sets the style sheet this document, and all of its children, uses.
-void ElementDocument::SetStyleSheet(SharedPtr<StyleSheet> _style_sheet)
+void ElementDocument::SetStyleSheetContainer(SharedPtr<StyleSheetContainer> _style_sheet_container)
 {
 	RMLUI_ZoneScoped;
 
-	if (style_sheet == _style_sheet)
+	if (style_sheet_container == _style_sheet_container)
 		return;
 
-	style_sheet = std::move(_style_sheet);
-	
-	if (style_sheet)
-	{
-		style_sheet->BuildNodeIndex();
-		style_sheet->OptimizeNodeProperties();
-	}
+	style_sheet_container = std::move(_style_sheet_container);
 
-	GetStyle()->DirtyDefinition();
-}
-
-// Returns the document's style sheet.
-const SharedPtr<StyleSheet>& ElementDocument::GetStyleSheet() const
-{
-	return style_sheet;
+	DirtyMediaQueries();
 }
 
 // Reload the document's style sheet from source files.
@@ -227,13 +221,28 @@ void ElementDocument::ReloadStyleSheet()
 	}
 
 	Factory::ClearStyleSheetCache();
+	Factory::ClearTemplateCache();
 	ElementPtr temp_doc = Factory::InstanceDocumentStream(nullptr, stream.get(), context->GetDocumentsBaseTag());
 	if (!temp_doc) {
 		Log::Message(Log::LT_WARNING, "Failed to reload style sheet, could not instance document: %s", source_url.c_str());
 		return;
 	}
 
-	SetStyleSheet(temp_doc->GetStyleSheet());
+	SetStyleSheetContainer(static_cast<ElementDocument*>(temp_doc.get())->style_sheet_container);
+}
+
+void ElementDocument::DirtyMediaQueries()
+{
+	if (context && style_sheet_container)
+	{
+		const bool changed_style_sheet = style_sheet_container->UpdateCompiledStyleSheet(context);
+
+		if (changed_style_sheet)
+		{
+			GetStyle()->DirtyDefinition();
+			OnStyleSheetChangeRecursive();
+		}
+	}
 }
 
 // Brings the document to the front of the document stack.
@@ -480,11 +489,6 @@ void ElementDocument::DirtyLayout()
 bool ElementDocument::IsLayoutDirty()
 {
 	return layout_dirty;
-}
-
-void ElementDocument::DirtyDpProperties()
-{
-	GetStyle()->DirtyPropertiesWithUnitsRecursive(Property::DP);
 }
 
 void ElementDocument::DirtyVwAndVhProperties()

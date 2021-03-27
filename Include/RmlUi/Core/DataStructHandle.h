@@ -84,7 +84,7 @@ public:
 
 	/// Register member getter and setter functions. The getter and setter functions must return and assign scalar value types.
 	/// @note Underlying type must be registered before it is used as a member.
-	/// @note Getter and setter functions can return by reference, raw pointer, or by value. Only scalar data types allowed.
+	/// @note Getter and setter functions can return by reference, raw pointer, or by value.
 	/// @example
 	///		struct Invader {
 	///			MyColorType GetColor() const;
@@ -277,6 +277,15 @@ bool StructHandle<Object>::CreateMemberScalarGetSetFuncDefinitionImpl(StructDefi
 	VariableDefinition* underlying_definition = type_register->GetDefinition<UnderlyingType, Object>();
 	if (!underlying_definition)
 		return false;
+
+	if (!IsVoidMemberFunc<MemberGetType>::value)
+	{
+		RMLUI_ASSERTMSG(member_get_func_ptr, "Expected member getter function, but none provided.");
+	}
+	if (!IsVoidMemberFunc<MemberSetType>::value)
+	{
+		RMLUI_ASSERTMSG(member_get_func_ptr, "Expected member setter function, but none provided.");
+	}
 
 	if (underlying_definition->Type() != DataVariableType::Scalar)
 	{

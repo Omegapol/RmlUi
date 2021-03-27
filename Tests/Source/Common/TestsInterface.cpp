@@ -27,6 +27,7 @@
  */
 
 #include "TestsInterface.h"
+#include <RmlUi/Core/StringUtilities.h>
 #include <doctest.h>
 
 bool rml_stop_on_asserts = true;
@@ -39,15 +40,44 @@ bool TestsSystemInterface::LogMessage(Rml::Log::Type type, const Rml::String& me
 	auto s_type = type;
 	if(!rml_stop_on_asserts && type == Rml::Log::LT_ASSERT)
 		s_type = Rml::Log::LT_ERROR;
-	bool result = Rml::SystemInterface::LogMessage(s_type, message);
+	const bool result = Rml::SystemInterface::LogMessage(s_type, message);
+
 	if(rml_throw_on_errors && type < Rml::Log::Type::LT_INFO)
 		throw TestException(message.c_str());
-	else
-		CHECK_MESSAGE(type >= Rml::Log::Type::LT_INFO, message.c_str());
+	else {
+		if (type <= Rml::Log::Type::LT_WARNING) {
+			const Rml::String warning = "RmlUi " + Rml::String(message_type_str[type]) + ": " + message;
+
+			if (num_expected_warnings > 0) {
+				num_logged_warnings += 1;
+				warnings.push_back(warning);
+			} else {
+						FAIL_CHECK(warning);
+			}
+		}
+	}
 
 	return result;
 }
 
+void TestsSystemInterface::SetNumExpectedWarnings(int in_num_expected_warnings)
+{
+	if (num_expected_warnings > 0)
+	{
+		// Check and clear previous warnings
+		if (num_logged_warnings != num_expected_warnings)
+		{
+			Rml::String str = "Got unexpected number of warnings: \n";
+			Rml::StringUtilities::JoinString(str, warnings, '\n');
+			CHECK_MESSAGE(num_logged_warnings == num_expected_warnings, str);
+		}
+
+		num_expected_warnings = 0;
+		num_logged_warnings = 0;
+		warnings.clear();
+	}
+	num_expected_warnings = in_num_expected_warnings;
+}
 
 void TestsRenderInterface::RenderGeometry(Rml::Vertex* /*vertices*/, int /*num_vertices*/, int* /*indices*/, int /*num_indices*/, const Rml::TextureHandle /*texture*/, const Rml::Vector2f& /*translation*/)
 {

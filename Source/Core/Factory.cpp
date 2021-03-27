@@ -37,6 +37,7 @@
 #include "../../Include/RmlUi/Core/EventListenerInstancer.h"
 #include "../../Include/RmlUi/Core/StreamMemory.h"
 #include "../../Include/RmlUi/Core/StyleSheet.h"
+#include "../../Include/RmlUi/Core/StyleSheetContainer.h"
 #include "../../Include/RmlUi/Core/SystemInterface.h"
 
 #include "../../Include/RmlUi/Core/Elements/ElementForm.h"
@@ -68,7 +69,6 @@
 #include "FontEffectOutline.h"
 #include "FontEffectShadow.h"
 #include "PluginRegistry.h"
-#include "PropertyParserColour.h"
 #include "StreamFile.h"
 #include "StyleSheetFactory.h"
 #include "TemplateCache.h"
@@ -537,14 +537,14 @@ FontEffectInstancer* Factory::GetFontEffectInstancer(const String& name)
 
 
 // Creates a style sheet containing the passed in styles.
-SharedPtr<StyleSheet> Factory::InstanceStyleSheetString(const String& string)
+SharedPtr<StyleSheetContainer> Factory::InstanceStyleSheetString(const String& string)
 {
 	auto memory_stream = MakeUnique<StreamMemory>((const byte*) string.c_str(), string.size());
 	return InstanceStyleSheetStream(memory_stream.get());
 }
 
 // Creates a style sheet from a file.
-SharedPtr<StyleSheet> Factory::InstanceStyleSheetFile(const String& file_name)
+SharedPtr<StyleSheetContainer> Factory::InstanceStyleSheetFile(const String& file_name)
 {
 	auto file_stream = MakeUnique<StreamFile>();
 	file_stream->Open(file_name);
@@ -552,12 +552,12 @@ SharedPtr<StyleSheet> Factory::InstanceStyleSheetFile(const String& file_name)
 }
 
 // Creates a style sheet from an Stream.
-SharedPtr<StyleSheet> Factory::InstanceStyleSheetStream(Stream* stream)
+SharedPtr<StyleSheetContainer> Factory::InstanceStyleSheetStream(Stream* stream)
 {
-	SharedPtr<StyleSheet> style_sheet = MakeShared<StyleSheet>();
-	if (style_sheet->LoadStyleSheet(stream))
+	SharedPtr<StyleSheetContainer> style_sheet_container = MakeShared<StyleSheetContainer>();
+	if (style_sheet_container->LoadStyleSheetContainer(stream))
 	{
-		return style_sheet;
+		return style_sheet_container;
 	}
 	return nullptr;
 }

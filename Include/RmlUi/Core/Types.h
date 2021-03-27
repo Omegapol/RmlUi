@@ -85,9 +85,11 @@ class FontEffect;
 struct Animation;
 struct Transition;
 struct TransitionList;
+struct DecoratorDeclarationList;
 struct Rectangle;
 enum class EventId : uint16_t;
 enum class PropertyId : uint8_t;
+enum class MediaQueryId : uint8_t;
 enum class FamilyId : int;
 
 // Types for external interfaces.
@@ -116,13 +118,7 @@ using ElementAttributes = Dictionary;
 using XMLAttributes = Dictionary;
 
 using AnimationList = Vector<Animation>;
-using DecoratorList = Vector<SharedPtr<const Decorator>>;
 using FontEffectList = Vector<SharedPtr<const FontEffect>>;
-
-struct Decorators {
-	DecoratorList list;
-	String value;
-};
 struct FontEffects {
 	FontEffectList list;
 	String value;
@@ -130,7 +126,7 @@ struct FontEffects {
 
 // Additional smart pointers
 using TransformPtr = SharedPtr< Transform >;
-using DecoratorsPtr = SharedPtr<const Decorators>;
+using DecoratorsPtr = SharedPtr<const DecoratorDeclarationList>;
 using FontEffectsPtr = SharedPtr<const FontEffects>;
 
 // Data binding types

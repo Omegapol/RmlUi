@@ -72,7 +72,7 @@ private:
 *   Generally, Scalar types can set and get values, while Array and Struct types can retrieve children based on data addresses.
 */
 
-class RMLUICORE_API VariableDefinition {
+class RMLUICORE_API VariableDefinition : public NonCopyMoveable {
 public:
 	virtual ~VariableDefinition() = default;
 	DataVariableType Type() const { return type; }

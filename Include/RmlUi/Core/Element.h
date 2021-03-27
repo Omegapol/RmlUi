@@ -60,6 +60,7 @@ class PropertiesIteratorView;
 class PropertyDictionary;
 class RenderInterface;
 class StyleSheet;
+class StyleSheetContainer;
 class TransformState;
 struct ElementMeta;
 struct StackingOrderedChild;
@@ -104,11 +105,7 @@ public:
 
 	/// Returns the active style sheet for this element. This may be nullptr.
 	/// @return The element's style sheet.
-	virtual const SharedPtr<StyleSheet>& GetStyleSheet() const;
-
-	/// Returns the element's definition.
-	/// @return The element's definition.
-	const ElementDefinition* GetDefinition();
+	virtual const StyleSheet* GetStyleSheet() const;
 
 	/// Fills a string with the full address of this element.
 	/// @param[in] include_pseudo_classes True if the address is to include the pseudo-classes of the leaf element.
@@ -419,7 +416,7 @@ public:
 	/// Gets this element's parent node.
 	/// @return This element's parent.
 	Element* GetParentNode() const;
-	/// Recursively search for a ancestor of this node matching the given selector.
+	/// Recursively search for the first ancestor of this node matching the given selector.
 	/// @param[in] selectors The selector or comma-separated selectors to match against.
 	/// @return The ancestor if found, or nullptr if no ancestor could be matched.
 	/// @performance Prefer GetElementById/TagName/ClassName whenever possible.
@@ -608,6 +605,10 @@ protected:
 	virtual void OnResize();
 	/// Called during a layout operation, when the element is being positioned and sized.
 	virtual void OnLayout();
+	/// Called when the 'dp'-ratio has been changed.
+	virtual void OnDpRatioChange();
+	/// Called when the current document's compiled style sheet has been changed. This may result in changed sprites.
+	virtual void OnStyleSheetChange();
 
 	/// Called when attributes on the element are changed.
 	/// @param[in] changed_attributes Dictionary of attributes changed on the element. Attribute value will be empty if it was unset.
@@ -645,6 +646,8 @@ protected:
 
 	void SetOwnerDocument(ElementDocument* document);
 
+	void OnStyleSheetChangeRecursive();
+
 	void Release() override;
 
 private:
@@ -666,6 +669,8 @@ private:
 
 	void DirtyTransformState(bool perspective_dirty, bool transform_dirty);
 	void UpdateTransformState();
+
+	void OnDpRatioChangeRecursive();
 
 	/// Start an animation, replacing any existing animations of the same property name. If start_value is null, the element's current value is used.
 	ElementAnimationList::iterator StartAnimation(PropertyId property_id, const Property * start_value, int num_iterations, bool alternate_direction, float delay, bool initiated_by_animation_property);

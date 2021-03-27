@@ -166,6 +166,27 @@ enum class PropertyId : uint8_t
 	MaxNumIds = 128
 };
 
+enum class MediaQueryId : uint8_t
+{
+	Invalid, 
+
+	Width,
+	MinWidth,
+	MaxWidth,
+	Height,
+	MinHeight,
+	MaxHeight,
+	AspectRatio,
+	MinAspectRatio,
+	MaxAspectRatio,
+	Resolution,
+	MinResolution,
+	MaxResolution,
+	Orientation,
+	Theme,
+
+	NumDefinedIds
+};
 
 enum class EventId : uint16_t 
 {

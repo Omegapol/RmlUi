@@ -70,13 +70,13 @@ public:
 	DataModelHandle GetModelHandle() const;
 
 	// Bind a data variable.
-	// @note For non-scalar types make sure they first have been registered with the appropriate 'Register...()' functions.
+	// @note For non-builtin types, make sure they first have been registered with the appropriate 'Register...()' functions.
 	template<typename T>
 	bool Bind(const String& name, T* ptr) {
 		RMLUI_ASSERTMSG(ptr, "Invalid pointer to data variable");
 		return BindVariable(name, DataVariable(type_register->GetDefinition<T>(), ptr));
 	}
-	
+
 	// Bind a get/set function pair.
 	bool BindFunc(const String& name, DataGetFunc get_func, DataSetFunc set_func = {});
 
@@ -112,7 +112,7 @@ public:
 	// Register an array type.
 	// @note The type applies to every data model associated with the current Context.
 	// @note If 'Container::value_type' represents a non-scalar type, that type must already have been registered with the appropriate 'Register...()' functions.
-	// @note Container requires the following functions to be implemented: size() and begin(). This is satisfied by several containers such as std::vector and std::array.
+	// @note Container requires the following functions to be implemented: size() and begin(). This is satisfied by several containers including std::vector and std::array.
 	template<typename Container>
 	bool RegisterArray();
 

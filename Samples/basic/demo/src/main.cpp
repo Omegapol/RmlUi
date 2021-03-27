@@ -54,17 +54,13 @@ scrollbarhorizontal sliderbar:active { background: #666; }
 class DemoWindow : public Rml::EventListener
 {
 public:
-	DemoWindow(const Rml::String &title, const Rml::Vector2f &position, Rml::Context *context)
+	DemoWindow(const Rml::String &title, Rml::Context *context)
 	{
 		using namespace Rml;
 		document = context->LoadDocument("basic/demo/data/demo.rml");
-		if (document != nullptr)
+		if (document)
 		{
-			{
-				document->GetElementById("title")->SetInnerRML(title);
-				document->SetProperty(PropertyId::Left, Property(position.x, Property::PX));
-				document->SetProperty(PropertyId::Top, Property(position.y, Property::PX));
-			}
+			document->GetElementById("title")->SetInnerRML(title);
 
 			// Add sandbox default text.
 			if (auto source = static_cast<Rml::ElementFormControl*>(document->GetElementById("sandbox_rml_source")))
@@ -102,8 +98,8 @@ public:
 				Rml::StreamMemory stream((Rml::byte*)style_sheet_content.data(), style_sheet_content.size());
 				stream.SetSourceURL("sandbox://default_rcss");
 
-				rml_basic_style_sheet = MakeShared<Rml::StyleSheet>();
-				rml_basic_style_sheet->LoadStyleSheet(&stream);
+				rml_basic_style_sheet = MakeShared<Rml::StyleSheetContainer>();
+				rml_basic_style_sheet->LoadStyleSheetContainer(&stream);
 			}
 
 			// Add sandbox style sheet text.
@@ -224,13 +220,13 @@ public:
 	{
 		if (iframe && rml_basic_style_sheet)
 		{
-			auto style = Rml::MakeShared<Rml::StyleSheet>();
+			auto style = Rml::MakeShared<Rml::StyleSheetContainer>();
 			Rml::StreamMemory stream((const Rml::byte*)string.data(), string.size());
 			stream.SetSourceURL("sandbox://rcss");
 
-			style->LoadStyleSheet(&stream);
-			style = rml_basic_style_sheet->CombineStyleSheet(*style);
-			iframe->SetStyleSheet(style);
+			style->LoadStyleSheetContainer(&stream);
+			style = rml_basic_style_sheet->CombineStyleSheetContainer(*style);
+			iframe->SetStyleSheetContainer(style);
 		}
 	}
 
@@ -246,7 +242,7 @@ private:
 	Rml::ElementDocument *document = nullptr;
 	Rml::ElementDocument *iframe = nullptr;
 	Rml::Element *gauge = nullptr, *progress_horizontal = nullptr;
-	Rml::SharedPtr<Rml::StyleSheet> rml_basic_style_sheet;
+	Rml::SharedPtr<Rml::StyleSheetContainer> rml_basic_style_sheet;
 
 	bool submitting = false;
 	double submitting_start_time = 0;
@@ -465,7 +461,7 @@ int main(int RMLUI_UNUSED_PARAMETER(argc), char** RMLUI_UNUSED_PARAMETER(argv))
 #endif
 
 	const int width = 1600;
-	const int height = 900;
+	const int height = 890;
 
 	ShellRenderInterfaceOpenGL opengl_renderer;
 	shell_renderer = &opengl_renderer;
@@ -498,16 +494,14 @@ int main(int RMLUI_UNUSED_PARAMETER(argc), char** RMLUI_UNUSED_PARAMETER(argv))
 
 	Rml::Debugger::Initialise(context);
 	Input::SetContext(context);
-	shell_renderer->SetContext(context);
-	
-	context->SetDensityIndependentPixelRatio(1.0f);
+	Shell::SetContext(context);
 
 	DemoEventListenerInstancer event_listener_instancer;
 	Rml::Factory::RegisterEventListenerInstancer(&event_listener_instancer);
 
 	Shell::LoadFonts("assets/");
 
-	demo_window = Rml::MakeUnique<DemoWindow>("Demo sample", Rml::Vector2f(150, 50), context);
+	demo_window = Rml::MakeUnique<DemoWindow>("Demo sample", context);
 	demo_window->GetDocument()->AddEventListener(Rml::EventId::Keydown, demo_window.get());
 	demo_window->GetDocument()->AddEventListener(Rml::EventId::Keyup, demo_window.get());
 	demo_window->GetDocument()->AddEventListener(Rml::EventId::Animationend, demo_window.get());

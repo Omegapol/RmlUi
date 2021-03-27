@@ -56,9 +56,6 @@ public:
 	/// @param[in] element The element this structure belongs to.
 	ElementStyle(Element* element);
 
-	/// Returns the element's definition.
-	const ElementDefinition* GetDefinition() const;
-	
 	/// Update this definition if required
 	void UpdateDefinition();
 
@@ -129,6 +126,8 @@ public:
 	/// some operations may require to dirty these manually, such as when moving an element into another.
 	void DirtyInheritedProperties();
 
+	/// Dirties all properties with any of the given units (OR-ed together) on the current element (*not* recursive).
+	void DirtyPropertiesWithUnits(Property::Unit units);
 	/// Dirties all properties with any of the given units (OR-ed together) on the current element and recursively on all children.
 	void DirtyPropertiesWithUnitsRecursive(Property::Unit units);
 

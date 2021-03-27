@@ -105,7 +105,7 @@ static void InitializeShell()
 		shell_render_interface.SetViewport(window_size.x, window_size.y);
 
 		::Input::SetContext(shell_context);
-		shell_render_interface.SetContext(shell_context);
+		Shell::SetContext(shell_context);
 
 		shell_context->GetRootElement()->AddEventListener(Rml::EventId::Keydown, &shell_event_listener, true);
 #endif
@@ -154,16 +154,24 @@ void TestsShell::ShutdownShell()
 		RMLUI_ASSERTMSG(shell_context->GetNumDocuments() == num_documents_begin, "Make sure all previously opened documents have been closed.");
 		(void)num_documents_begin;
 
+		tests_system_interface.SetNumExpectedWarnings(0);
+
 		Rml::Shutdown();
 
 #ifdef RMLUI_TESTS_USE_SHELL
 		Shell::CloseWindow();
 		Shell::Shutdown();
+		Shell::SetContext(nullptr);
 #endif
 
 		shell_context = nullptr;
 		shell_initialized = false;
 	}
+}
+
+void TestsShell::SetNumExpectedWarnings(int num_warnings)
+{
+	tests_system_interface.SetNumExpectedWarnings(num_warnings);
 }
 
 Rml::String TestsShell::GetRenderStats()
