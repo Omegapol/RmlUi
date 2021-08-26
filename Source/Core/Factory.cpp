@@ -84,6 +84,13 @@
 #include "Elements/XMLNodeHandlerDataGrid.h"
 #include "Elements/XMLNodeHandlerTabSet.h"
 #include "Elements/XMLNodeHandlerTextArea.h"
+#include "../../RmlUi/Include/RmlUi/Core/Elements/ElementCanvas.h"
+#include "Elements/ElementGraph/LineGraph.h"
+#include "Elements/ElementGraph/GraphScale.h"
+#include "Elements/ElementGraph/GraphGrid.h"
+#include "Elements/ElementGraph/AreaGraph.h"
+#include "Elements/ElementGraph/CandleGraph.h"
+#include "Elements/ElementGraph/CandleBarGraph.h"
 
 #include <algorithm>
 
@@ -138,6 +145,14 @@ struct DefaultInstancers {
 	ElementInstancerGeneric<ElementHandle> element_handle;
 	ElementInstancerGeneric<ElementDocument> element_body;
 
+	ElementInstancerGeneric<ElementCanvas> element_canvas;
+	ElementInstancerGeneric<LineGraph> 	element_graph_line;
+	ElementInstancerGeneric<CandleGraph> 	element_graph_candles;
+	ElementInstancerGeneric<CandleBarGraph> 	element_graph_candlebars;
+	ElementInstancerGeneric<AreaGraph> 	element_graph_area;
+	ElementInstancerGeneric<GraphScale> element_graph_scale;
+	ElementInstancerGeneric<GraphGrid> element_graph_grid;
+
 	// Control elements
 	ElementInstancerGeneric<ElementForm> form;
 	ElementInstancerGeneric<ElementFormControlInput> input;
@@ -172,6 +187,7 @@ struct DefaultInstancers {
 
 	// Data binding views
 	DataViewInstancerDefault<DataViewAttribute> data_view_attribute;
+	DataViewInstancerDefault<DataViewSource> data_view_source;
 	DataViewInstancerDefault<DataViewAttributeIf> data_view_attribute_if;
 	DataViewInstancerDefault<DataViewClass> data_view_class;
 	DataViewInstancerDefault<DataViewIf> data_view_if;
@@ -231,6 +247,14 @@ bool Factory::Initialise()
 	RegisterElementInstancer("handle", &default_instancers->element_handle);
 	RegisterElementInstancer("body", &default_instancers->element_body);
 
+	RegisterElementInstancer("graph", &default_instancers->element_canvas);
+	RegisterElementInstancer("line", &default_instancers->element_graph_line);
+	RegisterElementInstancer("candles", &default_instancers->element_graph_candles);
+	RegisterElementInstancer("candlebars", &default_instancers->element_graph_candlebars);
+	RegisterElementInstancer("area", &default_instancers->element_graph_area);
+	RegisterElementInstancer("scale", &default_instancers->element_graph_scale);
+	RegisterElementInstancer("grid", &default_instancers->element_graph_grid);
+
 	// Control element instancers
 	RegisterElementInstancer("form", &default_instancers->form);
 	RegisterElementInstancer("input", &default_instancers->input);
@@ -265,6 +289,7 @@ bool Factory::Initialise()
 
 	// Data binding views
 	RegisterDataViewInstancer(&default_instancers->data_view_attribute,      "attr",    false);
+	RegisterDataViewInstancer(&default_instancers->data_view_source,      "source",    false);
 	RegisterDataViewInstancer(&default_instancers->data_view_attribute_if,   "attrif",  false);
 	RegisterDataViewInstancer(&default_instancers->data_view_class,          "class",   false);
 	RegisterDataViewInstancer(&default_instancers->data_view_if,             "if",      false);

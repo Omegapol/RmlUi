@@ -26,16 +26,11 @@
  *
  */
 
+#include <RmlUi/Core/Elements/ElementDataSink.h>
 #include "DataViewDefault.h"
 #include "DataExpression.h"
 #include "DataModel.h"
-#include "../../Include/RmlUi/Core/Core.h"
-#include "../../Include/RmlUi/Core/DataVariable.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/ElementText.h"
-#include "../../Include/RmlUi/Core/Factory.h"
-#include "../../Include/RmlUi/Core/SystemInterface.h"
-#include "../../Include/RmlUi/Core/Variant.h"
+#include "Elements/common.h"
 
 namespace Rml {
 
@@ -129,6 +124,41 @@ bool DataViewAttributeIf::Update(DataModel& model)
 		}
 	}
 	return result;
+}
+DataViewSource::DataViewSource(Element* element) : DataViewCommon(element)
+{
+	auto ptr = dynamic_cast<ElementDataSink*>(element);
+	if (!ptr)
+		Log::Message(Log::LT_ERROR, "Given element can't be fed with data");
+
+}
+
+bool DataViewSource::Initialize(DataModel& model, Element* element, const String& expression_str, const String& in_modifier)
+{
+	DataViewCommon::Initialize(model, element, expression_str, in_modifier);
+	
+	auto sources = split(expression_str, ",");
+	for(const auto& source: sources) {
+		const DataAddress &addr = model.ResolveAddress(source, element);
+		if (addr.empty())
+			return false;
+		addresses.push_back(addr);
+	}
+	return true;
+}
+
+bool DataViewSource::Update(DataModel& model)
+{
+	auto ptr = dynamic_cast<ElementDataSink*>(this->GetElement());
+	if(ptr)
+	{
+		//todo: use only one address
+		for(const auto& addr: addresses) {
+			auto var = model.GetVariable(addr);
+			ptr->FeedData(var);
+		}
+	}
+	return true;
 }
 
 

@@ -77,6 +77,18 @@ public:
 	bool Update(DataModel& model) override;
 };
 
+class DataViewSource final : public DataViewCommon {
+public:
+	using AddressList = Vector<DataAddress>;
+	DataViewSource(Element* element);
+	bool Initialize(DataModel& model, Element* element, const String& expression_str, const String& in_modifier) override;
+
+	bool Update(DataModel& model) override;
+
+private:
+	AddressList addresses;
+};
+
 class DataViewValue final : public DataViewAttribute {
 public:
 	DataViewValue(Element* element);

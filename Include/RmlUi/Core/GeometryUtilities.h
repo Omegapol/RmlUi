@@ -67,6 +67,14 @@ public:
 	/// @param[in] index_offset The offset to be added to the generated indices; this should be the number of vertices already in the array.
 	static void GenerateQuad(Vertex* vertices, int* indices, Vector2f origin, Vector2f dimensions, Colourb colour, Vector2f top_left_texcoord, Vector2f bottom_right_texcoord, int index_offset = 0);
 
+	static void GenerateTriangle(Vertex* vertices, int* indices, Vector2f points[3], Colourb colour, Vector2f texcoords[3], int index_offset = 0);
+
+	static void
+	GenerateLineGraph(Vertex *vertices, int *indices, Vector2f origin, Vector2f target, Colourb colour, float width,
+					  Vector2f top_left_texcoord, Vector2f bottom_right_texcoord,
+					  Vector2f scale, int index_offset = 0, Vector2f offset = {0.0f, 0.0f}
+	);
+
 	/// Generates the geometry required to render a line above, below or through a line of text.
 	/// @param[in] font_face_handle The font face handle to derive the line's metrics from.
 	/// @param[out] geometry The geometry to append the newly created geometry into.

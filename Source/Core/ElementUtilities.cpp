@@ -192,6 +192,20 @@ bool ElementUtilities::GetClippingRegion(Vector2i& clip_origin, Vector2i& clip_d
 	// complete clipping region for the element.
 	Element* clipping_element = element->GetParentNode();
 
+	return ElementUtilities::GetClippingRegionDirect(clip_origin, clip_dimensions, num_ignored_clips, clipping_element);
+}
+
+// Generates the clipping region for an element.
+bool ElementUtilities::GetClippingRegionDirect(Vector2i& clip_origin, Vector2i& clip_dimensions, int num_ignored_clips, Element* element)
+{
+	clip_origin = Vector2i(-1, -1);
+	clip_dimensions = Vector2i(-1, -1);
+
+	// Search through the element's ancestors, finding all elements that clip their overflow and have overflow to clip.
+	// For each that we find, we combine their clipping region with the existing clipping region, and so build up a
+	// complete clipping region for the element.
+	Element* clipping_element = element;
+
 	while (clipping_element != nullptr)
 	{
 		// Merge the existing clip region with the current clip region if we aren't ignoring clip regions.
@@ -204,10 +218,10 @@ bool ElementUtilities::GetClippingRegion(Vector2i& clip_origin, Vector2i& clip_d
 				const Box::Area client_area = clipping_element->GetClientArea();
 				const Vector2f element_origin_f = clipping_element->GetAbsoluteOffset(client_area);
 				const Vector2f element_dimensions_f = clipping_element->GetBox().GetSize(client_area);
-				
+
 				const Vector2i element_origin(Math::RealToInteger(element_origin_f.x), Math::RealToInteger(element_origin_f.y));
 				const Vector2i element_dimensions(Math::RealToInteger(element_dimensions_f.x), Math::RealToInteger(element_dimensions_f.y));
-				
+
 				if (clip_origin == Vector2i(-1, -1) && clip_dimensions == Vector2i(-1, -1))
 				{
 					clip_origin = element_origin;
@@ -217,10 +231,10 @@ bool ElementUtilities::GetClippingRegion(Vector2i& clip_origin, Vector2i& clip_d
 				{
 					const Vector2i top_left(Math::Max(clip_origin.x, element_origin.x),
 					                        Math::Max(clip_origin.y, element_origin.y));
-					
+
 					const Vector2i bottom_right(Math::Min(clip_origin.x + clip_dimensions.x, element_origin.x + element_dimensions.x),
 					                            Math::Min(clip_origin.y + clip_dimensions.y, element_origin.y + element_dimensions.y));
-					
+
 					clip_origin = top_left;
 					clip_dimensions.x = Math::Max(0, bottom_right.x - top_left.x);
 					clip_dimensions.y = Math::Max(0, bottom_right.y - top_left.y);
@@ -240,13 +254,13 @@ bool ElementUtilities::GetClippingRegion(Vector2i& clip_origin, Vector2i& clip_d
 		int clipping_element_ignore_clips = clipping_element->GetClippingIgnoreDepth();
 		if (clipping_element_ignore_clips < 0)
 			break;
-		
+
 		num_ignored_clips = Math::Max(num_ignored_clips, clipping_element_ignore_clips);
 
 		// Climb the tree to this region's parent.
 		clipping_element = clipping_element->GetParentNode();
 	}
-	
+
 	return clip_dimensions.x >= 0 && clip_dimensions.y >= 0;
 }
 

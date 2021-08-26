@@ -77,6 +77,88 @@ void GeometryUtilities::GenerateQuad(Vertex* vertices, int* indices, Vector2f or
 	indices[5] = index_offset + 2;
 }
 
+void GeometryUtilities::GenerateTriangle(Vertex* vertices, int* indices, Vector2f points[3], Colourb colour, Vector2f texcoords[3], int index_offset) {
+	vertices[0].position = points[0];
+	vertices[0].colour = colour;
+	vertices[0].tex_coord = texcoords[0];
+
+	vertices[1].position = points[1];
+	vertices[1].colour = colour;
+	vertices[1].tex_coord = texcoords[1];
+
+	vertices[2].position = points[2];
+	vertices[2].colour = colour;
+	vertices[2].tex_coord = texcoords[2];
+
+	indices[0] = index_offset + 0;
+	indices[1] = index_offset + 1;
+	indices[2] = index_offset + 2;
+}
+
+Vector3f crossProduct(Vector3f vec1, Vector3f vec2)
+{
+	Vector3f res;
+	res.x = vec1.y * vec2.z - vec1.z * vec2.y;
+	res.y = vec1.z * vec2.x - vec1.x * vec2.z;
+	res.z = vec1.x * vec2.y - vec1.y * vec2.x;
+	return res;
+}
+
+Vector2f getPerpendicular(Vector2f vec)
+{
+	return {vec.y, -vec.x};
+}
+Vector2f getPerpendicularDir(Vector2f vec)
+{
+	return getPerpendicular(vec).Normalise();
+}
+
+// Generates a quad from a position, size, colour and texture coordinates.
+void GeometryUtilities::GenerateLineGraph(Vertex* vertices, int* indices, Vector2f origin, Vector2f target, Colourb colour, float width,
+									 Vector2f top_left_texcoord, Vector2f bottom_right_texcoord, Vector2f scale, int index_offset, Vector2f offset)
+{
+	Vector3f delta = Vector3f(target.x, target.y, 0) - Vector3f(origin.x, origin.y, 0);
+	Vector2f delta2d = {delta.x, delta.y};
+
+	origin.x /= scale.x;
+	delta2d.x /= scale.x;
+	origin.y /= scale.y;
+	delta2d.y /= scale.y;
+
+	origin += offset;
+	target += offset;
+
+//	Vector3f up = {0, 0, 1};
+//	Vector3f perpendicular = crossProduct(delta, up);
+//	perpendicular = perpendicular.Normalise() * (width / 2);
+//	Vector2f p = {perpendicular.x, perpendicular.y};
+	Vector2f p = getPerpendicularDir(delta2d) * (width / 2);
+
+	vertices[0].position = origin - p;
+	vertices[0].colour = colour;
+	vertices[0].tex_coord = top_left_texcoord;
+
+	vertices[1].position = origin + p;
+	vertices[1].colour = colour;
+	vertices[1].tex_coord = Vector2f(bottom_right_texcoord.x, top_left_texcoord.y);
+
+	vertices[2].position = origin + delta2d + p;
+	vertices[2].colour = colour;
+	vertices[2].tex_coord = bottom_right_texcoord;
+
+	vertices[3].position = origin + delta2d - p;
+	vertices[3].colour = colour;
+	vertices[3].tex_coord = Vector2f(top_left_texcoord.x, bottom_right_texcoord.y);
+
+	indices[0] = index_offset + 0;
+	indices[1] = index_offset + 3;
+	indices[2] = index_offset + 1;
+
+	indices[3] = index_offset + 1;
+	indices[4] = index_offset + 3;
+	indices[5] = index_offset + 2;
+}
+
 // Generates the geometry required to render a line above, below or through a line of text.
 void GeometryUtilities::GenerateLine(FontFaceHandle font_face_handle, Geometry* geometry, Vector2f position, int width, Style::TextDecoration height, Colourb colour)
 {
@@ -116,5 +198,6 @@ void GeometryUtilities::GenerateBackgroundBorder(Geometry* geometry, const Box& 
 	CornerSizes corner_sizes{ border_radius.x, border_radius.y, border_radius.z, border_radius.w };
 	GeometryBackgroundBorder::Draw(vertices, indices, corner_sizes, box, offset, background_colour, border_colours);
 }
+
 
 } // namespace Rml

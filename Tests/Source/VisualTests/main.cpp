@@ -38,14 +38,30 @@
 #include <Shell.h>
 #include <Input.h>
 #include <ShellRenderInterfaceOpenGL.h>
+#include <RmlUi/Core/DataModelHandle.h>
 
 
 Rml::Context* context = nullptr;
 ShellRenderInterfaceOpenGL* shell_renderer = nullptr;
 TestNavigator* g_navigator = nullptr;
 
+double global_time = 0.0f;
+double acc_time = 0.0f;
+
+Rml::Vector<Rml::Vector2f> updated_vec;
+
 void GameLoop()
 {
+	auto delta = Rml::GetSystemInterface()->GetElapsedTime() - global_time;
+	global_time = Rml::GetSystemInterface()->GetElapsedTime();
+	acc_time += delta;
+	while(acc_time > 0.5) {
+		updated_vec.push_back({(float) global_time, (float) global_time / 2.f});
+		acc_time -= 0.5;
+		auto model = Rml::GetContext(0)->GetDataModel("data").GetModelHandle();
+		model.DirtyVariable("updated_vec");
+	}
+
 	context->Update();
 
 	shell_renderer->PrepareRenderBuffer();
@@ -61,6 +77,9 @@ void GameLoop()
 
 #if defined RMLUI_PLATFORM_WIN32
 #include <windows.h>
+#include <Core/DataModel.h>
+#include <Core/Elements/ElementGraph/DataFeed.h>
+
 int APIENTRY WinMain(HINSTANCE RMLUI_UNUSED_PARAMETER(instance_handle), HINSTANCE RMLUI_UNUSED_PARAMETER(previous_instance_handle), char* RMLUI_UNUSED_PARAMETER(command_line), int RMLUI_UNUSED_PARAMETER(command_show))
 #else
 int main(int RMLUI_UNUSED_PARAMETER(argc), char** RMLUI_UNUSED_PARAMETER(argv))
@@ -111,6 +130,96 @@ int main(int RMLUI_UNUSED_PARAMETER(argc), char** RMLUI_UNUSED_PARAMETER(argv))
 	Rml::Debugger::Initialise(context);
 	Input::SetContext(context);
 	Shell::SetContext(context);
+
+	Rml::DataModelConstructor constructor = context->CreateDataModel("data");
+	if (auto handle = constructor.RegisterStruct<Rml::Vector2f>())
+	{
+		handle.RegisterMember("x", &Rml::Vector2f::x);
+		handle.RegisterMember("y", &Rml::Vector2f::y);
+	}
+	constructor.RegisterArray<Rml::Vector<Rml::Vector2f>>();
+
+	if (auto handle = constructor.RegisterStruct<Rml::CandleStickData>())
+	{
+		handle.RegisterMember("time", &Rml::CandleStickData::time);
+		handle.RegisterMember("h", &Rml::CandleStickData::high);
+		handle.RegisterMember("l", &Rml::CandleStickData::low);
+		handle.RegisterMember("en", &Rml::CandleStickData::entry);
+		handle.RegisterMember("ex", &Rml::CandleStickData::exit);
+	}
+	constructor.RegisterArray<Rml::Vector<Rml::CandleStickData>>();
+
+	static auto vec = new Rml::Vector<Rml::Vector2f>{
+			{10, 10},
+			{20, 12},
+			{30, 15},
+			{40, 14},
+			{50, 12},
+			{60, 20},
+			{70, 31},
+			{80, 35},
+			{90, 37},
+			{100, 70},
+			{110, 95},
+			{120, 100},
+			{150, -20},
+			{170, -50},
+			{210, 0},
+			{240, 50}
+	};
+	constructor.Bind("vec", vec);
+
+	static auto vec2 = new Rml::Vector<Rml::Vector2f>{
+			{20, 50},
+			{30, 55},
+			{40, 57},
+			{50, 100},
+			{60, 58},
+			{70, 52},
+			{80, 60},
+			{90, 50},
+			{100, 30}
+	};
+	constructor.Bind("vec2", vec2);
+
+	static auto candle = new Rml::Vector<Rml::CandleStickData>{
+			{50, 30, 35, 40, 10},
+			{53, 40, 40, 45, 15},
+			{50, 30, 45, 50, 20},
+			{60, 45, 50, 60, 25},
+			{62, 38, 60, 40, 30},
+			{45, 20, 40, 30, 35},
+			{45, 26, 30, 35, 40}
+	};
+	constructor.Bind("candlevec", candle);
+
+	static auto vec3 = new Rml::Vector<Rml::Vector2f>{};
+	for(auto i = 0; i< 10000; ++i)
+	{
+		vec3->push_back({(float)i*5, (i%5)*10.f + (i /100) * 10});
+	}
+	constructor.Bind("vec3", vec3);
+
+	static auto vec3h = new Rml::Vector<Rml::Vector2f>{};
+	for(auto i = 0; i< 10000; ++i)
+	{
+		vec3h->push_back({(float)i/3.f, (i%5)*10.f + (i /100) * 10});
+	}
+	constructor.Bind("vec3h", vec3h);
+
+	static auto vec3em = new Rml::Vector<Rml::Vector2f>{};
+	constructor.Bind("vec_empty", vec3em);
+
+	constructor.Bind("updated_vec", &updated_vec);
+
+	static auto vec4 = new Rml::Vector<Rml::Vector2f>{};
+	for(auto i = 0; i< 10000; ++i)
+	{
+		auto res = std::sinf((float) i / 5.f) + i/35.f;
+		vec4->push_back({(float)i, res*15.f});
+	}
+	constructor.Bind("sine", vec4);
+
 
 	Shell::LoadFonts("assets/");
 

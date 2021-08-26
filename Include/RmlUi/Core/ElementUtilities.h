@@ -97,11 +97,14 @@ public:
 	/// @param[in] element The element to generate the clipping region for.
 	/// @return True if a clipping region exists for the element and clip_origin and clip_window were set, false if not.
 	static bool GetClippingRegion(Vector2i& clip_origin, Vector2i& clip_dimensions, Element* element);
-	/// Sets the clipping region from an element and its ancestors.
+	static bool GetClippingRegionDirect(Vector2i& clip_origin, Vector2i& clip_dimensions, int num_ignored_clips, Element* element);
+
+/// Sets the clipping region from an element and its ancestors.
 	/// @param[in] element The element to generate the clipping region from.
 	/// @param[in] context The context of the element; if this is not supplied, it will be derived from the element.
 	/// @return The visibility of the given element within its clipping region.
 	static bool SetClippingRegion(Element* element, Context* context = nullptr);
+
 	/// Applies the clip region from the render interface to the renderer
 	/// @param[in] context The context to read the clip region from
 	/// @param[in] render_interface The render interface to update.

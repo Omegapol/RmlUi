@@ -28,6 +28,15 @@ set(Core_HDR_FILES
     ${PROJECT_SOURCE_DIR}/Source/Core/ElementDecoration.h
     ${PROJECT_SOURCE_DIR}/Source/Core/ElementDefinition.h
     ${PROJECT_SOURCE_DIR}/Source/Core/ElementHandle.h
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/DataFeed.h
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/LineGraph.h
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/common.h
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/BaseGraph.h
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/DataFeedAggregateStep.h
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/DataFeedTransforms.h
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/DataGraphTypes.h
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/DataFeedTypeCheck.h
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/MakeFeed.h
     ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementImage.h
     ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementLabel.h
     ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementTextSelection.h
@@ -154,10 +163,13 @@ set(Core_PUB_HDR_FILES
     ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/DataQuery.h
     ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/DataSource.h
     ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/DataSourceListener.h
+    ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/ElementCanvas.h
+    ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/ElementCanvasDrawable.h
     ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/ElementDataGrid.h
     ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/ElementDataGridCell.h
     ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/ElementDataGridExpandButton.h
     ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/ElementDataGridRow.h
+    ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/ElementDataSink.h
     ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/ElementForm.h
     ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/ElementFormControl.h
     ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/ElementFormControlDataSelect.h
@@ -166,6 +178,8 @@ set(Core_PUB_HDR_FILES
     ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/ElementFormControlTextArea.h
     ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/ElementProgressBar.h
     ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/ElementTabSet.h
+    ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/GraphFormatters.h
+    ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/DataFeedBase.h
     ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/Elements/SelectOption.h
     ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/ElementScroll.h
     ${PROJECT_SOURCE_DIR}/Include/RmlUi/Core/ElementText.h
@@ -289,13 +303,37 @@ set(Core_SRC_FILES
     ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementFormControlInput.cpp
     ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementFormControlSelect.cpp
     ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementFormControlTextArea.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementCanvas.cpp
     ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementImage.cpp
     ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementLabel.cpp
     ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementProgressBar.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/BaseGraph.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/DataFeed.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/LineGraph.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/common.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/GraphScale.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/GraphScale.h
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/GraphGrid.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/GraphGrid.h
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementCanvasDrawable.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/AreaGraph.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/AreaGraph.h
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/CandleGraph.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/CandleGraph.h
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/CandleBarGraph.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/CandleBarGraph.h
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/DataFeedConverter.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/DataFeedConverter.h
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/DataFeedAggregate.h
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/DataFeedAggregate.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/DataFeedTransforms.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/GraphFormatters.cpp
     ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementTabSet.cpp
     ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementTextSelection.cpp
     ${PROJECT_SOURCE_DIR}/Source/Core/Elements/InputType.cpp
     ${PROJECT_SOURCE_DIR}/Source/Core/Elements/InputTypeButton.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/MakeFeed.cpp
+    ${PROJECT_SOURCE_DIR}/Source/Core/Elements/ElementGraph/DataFeedTypeCheck.cpp
     ${PROJECT_SOURCE_DIR}/Source/Core/Elements/InputTypeCheckbox.cpp
     ${PROJECT_SOURCE_DIR}/Source/Core/Elements/InputTypeRadio.cpp
     ${PROJECT_SOURCE_DIR}/Source/Core/Elements/InputTypeRange.cpp
