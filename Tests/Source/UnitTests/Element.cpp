@@ -26,10 +26,12 @@
  *
  */
 
+#include "../Common/Mocks.h"
 #include "../Common/TestsShell.h"
 #include <RmlUi/Core/Context.h>
 #include <RmlUi/Core/Element.h>
 #include <RmlUi/Core/ElementDocument.h>
+#include <RmlUi/Core/Factory.h>
 #include <doctest.h>
 
 using namespace Rml;
@@ -50,7 +52,7 @@ static const String document_clone_rml = R"(
 		}
 		div {
 			drag: clone;
-			background: #ccc;
+			background-color: #fff;
 			height: 100px;
 		}
 		span {
@@ -60,13 +62,12 @@ static const String document_clone_rml = R"(
 </head>
 
 <body>
-<div>This is a <span>sample</span>.</div>
+<div style="background-color: #f00">This is a <span>sample</span>.</div>
 </body>
 </rml>
 )";
 
-
-TEST_CASE("element.clone")
+TEST_CASE("Element")
 {
 	Context* context = TestsShell::GetContext();
 	REQUIRE(context);
@@ -80,26 +81,106 @@ TEST_CASE("element.clone")
 
 	TestsShell::RenderLoop();
 
-	// Simulate input for mouse click and drag
-	context->ProcessMouseMove(10, 10, 0);
+	SUBCASE("Attribute")
+	{
+		auto* button = document->AppendChild(document->CreateElement("button"));
+		SUBCASE("Event listener")
+		{
+			namespace tl = trompeloeil;
+			static constexpr auto ON_CLICK_ATTRIBUTE = "onclick";
+			static constexpr auto ON_CLICK_VALUE = "moo";
 
-	context->Update();
-	context->Render();
+			std::vector<UniquePtr<tl::expectation>> expectations;
 
-	context->ProcessMouseButtonDown(0, 0);
+			UniquePtr<MockEventListener> mockEventListener;
+			const auto configureMockEventListener = [&]()
+			{
+				mockEventListener.reset(new MockEventListener());
+				expectations.emplace_back(NAMED_ALLOW_CALL(*mockEventListener, OnAttach(button)));
+				expectations.emplace_back(NAMED_ALLOW_CALL(*mockEventListener, OnDetach(button))
+					.LR_SIDE_EFFECT(mockEventListener.reset()));
+			};
 
-	context->Update();
-	context->Render();
+			MockEventListenerInstancer mockEventListenerInstancer;
+			const auto configureMockEventListenerInstancer = [&](const auto value)
+			{
+				expectations.emplace_back(NAMED_REQUIRE_CALL(mockEventListenerInstancer, InstanceEventListener(value, button))
+					.LR_SIDE_EFFECT(configureMockEventListener())
+					.LR_RETURN(mockEventListener.get()));
+			};
 
-	// This should initiate a drag clone.
-	context->ProcessMouseMove(10, 11, 0);
+			Factory::RegisterEventListenerInstancer(&mockEventListenerInstancer);
 
-	context->Update();
-	context->Render();
+			configureMockEventListenerInstancer(ON_CLICK_VALUE);
+			button->SetAttribute(ON_CLICK_ATTRIBUTE, ON_CLICK_VALUE);
 
-	context->ProcessMouseButtonUp(0, 0);
+			SUBCASE("Replacement")
+			{
+				static constexpr auto REPLACEMENT_ON_CLICK_VALUE = "boo";
+
+				configureMockEventListenerInstancer(REPLACEMENT_ON_CLICK_VALUE);
+				button->SetAttribute(ON_CLICK_ATTRIBUTE, REPLACEMENT_ON_CLICK_VALUE);
+			}
+
+			button->RemoveAttribute(ON_CLICK_ATTRIBUTE);
+		}
+
+		SUBCASE("Simple")
+		{
+			static constexpr auto DISABLED_ATTRIBUTE = "disabled";
+
+			REQUIRE_FALSE(button->HasAttribute(DISABLED_ATTRIBUTE));
+			button->SetAttribute(DISABLED_ATTRIBUTE, "");
+			REQUIRE(button->HasAttribute(DISABLED_ATTRIBUTE));
+
+			SUBCASE("Replacement")
+			{
+				static constexpr auto VALUE = "something";
+
+				button->SetAttribute(DISABLED_ATTRIBUTE, VALUE);
+				const auto* attributeValue = button->GetAttribute(DISABLED_ATTRIBUTE);
+				REQUIRE(attributeValue);
+				REQUIRE(attributeValue->GetType() == Variant::Type::STRING);
+				CHECK(attributeValue->Get<String>() == VALUE);
+			}
+
+			button->RemoveAttribute(DISABLED_ATTRIBUTE);
+			CHECK_FALSE(button->HasAttribute(DISABLED_ATTRIBUTE));
+		}
+	}
+
+	SUBCASE("CloneDrag")
+	{
+		// Simulate input for mouse click and drag
+		context->ProcessMouseMove(10, 10, 0);
+
+		context->Update();
+		context->Render();
+
+		context->ProcessMouseButtonDown(0, 0);
+
+		context->Update();
+		context->Render();
+
+		// This should initiate a drag clone.
+		context->ProcessMouseMove(10, 11, 0);
+
+		context->Update();
+		context->Render();
+
+		context->ProcessMouseButtonUp(0, 0);
+	}
+
+	SUBCASE("CloneManual")
+	{
+		Element* element = document->GetFirstChild();
+		REQUIRE(element->GetProperty<String>("background-color") == "255, 0, 0, 255");
+		CHECK(element->Clone()->GetProperty<String>("background-color") == "255, 0, 0, 255");
+
+		element->SetProperty("background-color", "#0f0");
+		CHECK(element->Clone()->GetProperty<String>("background-color") == "0, 255, 0, 255");
+	}
 
 	document->Close();
-
 	TestsShell::ShutdownShell();
 }

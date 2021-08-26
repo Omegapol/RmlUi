@@ -47,7 +47,7 @@
 #include "../../Include/RmlUi/Core/Elements/ElementFormControlSelect.h"
 #include "../../Include/RmlUi/Core/Elements/ElementFormControlTextArea.h"
 #include "../../Include/RmlUi/Core/Elements/ElementTabSet.h"
-#include "../../Include/RmlUi/Core/Elements/ElementProgressBar.h"
+#include "../../Include/RmlUi/Core/Elements/ElementProgress.h"
 #include "../../Include/RmlUi/Core/Elements/ElementDataGrid.h"
 #include "../../Include/RmlUi/Core/Elements/ElementDataGridExpandButton.h"
 #include "../../Include/RmlUi/Core/Elements/ElementDataGridCell.h"
@@ -82,6 +82,7 @@
 #include "Elements/ElementLabel.h"
 #include "Elements/ElementTextSelection.h"
 #include "Elements/XMLNodeHandlerDataGrid.h"
+#include "Elements/XMLNodeHandlerSelect.h"
 #include "Elements/XMLNodeHandlerTabSet.h"
 #include "Elements/XMLNodeHandlerTextArea.h"
 #include "../../RmlUi/Include/RmlUi/Core/Elements/ElementCanvas.h"
@@ -164,7 +165,7 @@ struct DefaultInstancers {
 	ElementInstancerGeneric<ElementTextSelection> selection;
 	ElementInstancerGeneric<ElementTabSet> tabset;
 
-	ElementInstancerGeneric<ElementProgressBar> progressbar;
+	ElementInstancerGeneric<ElementProgress> progress;
 
 	ElementInstancerGeneric<ElementDataGrid> datagrid;
 	ElementInstancerGeneric<ElementDataGridExpandButton> datagrid_expand;
@@ -201,9 +202,8 @@ struct DefaultInstancers {
 	DataViewInstancerDefault<DataViewFor> structural_data_view_for;
 
 	// Data binding controllers
-	DataControllerInstancerDefault<DataControllerValue> data_controller_value;
 	DataControllerInstancerDefault<DataControllerEvent> data_controller_event;
-	DataControllerInstancerDefault<DataControllerChecked> data_controller_checked;
+	DataControllerInstancerDefault<DataControllerValue> data_controller_value;
 };
 
 static UniquePtr<DefaultInstancers> default_instancers;
@@ -266,7 +266,8 @@ bool Factory::Initialise()
 	RegisterElementInstancer("#selection", &default_instancers->selection);
 	RegisterElementInstancer("tabset", &default_instancers->tabset);
 
-	RegisterElementInstancer("progressbar", &default_instancers->progressbar);
+	RegisterElementInstancer("progress", &default_instancers->progress);
+	RegisterElementInstancer("progressbar", &default_instancers->progress);
 
 	RegisterElementInstancer("datagrid", &default_instancers->datagrid);
 	RegisterElementInstancer("datagridexpand", &default_instancers->datagrid_expand);
@@ -302,9 +303,9 @@ bool Factory::Initialise()
 	RegisterDataViewInstancer(&default_instancers->structural_data_view_for, "for",     true );
 
 	// Data binding controllers
-	RegisterDataControllerInstancer(&default_instancers->data_controller_value, "value");
+	RegisterDataControllerInstancer(&default_instancers->data_controller_value, "checked");
 	RegisterDataControllerInstancer(&default_instancers->data_controller_event, "event");
-	RegisterDataControllerInstancer(&default_instancers->data_controller_checked, "checked");
+	RegisterDataControllerInstancer(&default_instancers->data_controller_value, "value");
 
 	// XML node handlers
 	XMLParser::RegisterNodeHandler("", MakeShared<XMLNodeHandlerDefault>());
@@ -316,6 +317,7 @@ bool Factory::Initialise()
 	XMLParser::RegisterNodeHandler("datagrid", MakeShared<XMLNodeHandlerDataGrid>());
 	XMLParser::RegisterNodeHandler("tabset", MakeShared<XMLNodeHandlerTabSet>());
 	XMLParser::RegisterNodeHandler("textarea", MakeShared<XMLNodeHandlerTextArea>());
+	XMLParser::RegisterNodeHandler("select", MakeShared<XMLNodeHandlerSelect>());
 
 	return true;
 }
@@ -381,23 +383,16 @@ ElementInstancer* Factory::GetElementInstancer(const String& tag)
 // Instances a single element.
 ElementPtr Factory::InstanceElement(Element* parent, const String& instancer_name, const String& tag, const XMLAttributes& attributes)
 {
-	ElementInstancer* instancer = GetElementInstancer(instancer_name);
-
-	if (instancer)
+	if (ElementInstancer* instancer = GetElementInstancer(instancer_name))
 	{
-		ElementPtr element = instancer->InstanceElement(parent, tag, attributes);		
-
-		// Process the generic attributes and bind any events
-		if (element)
+		if (ElementPtr element = instancer->InstanceElement(parent, tag, attributes))
 		{
 			element->SetInstancer(instancer);
 			element->SetAttributes(attributes);
-			ElementUtilities::BindEventAttributes(element.get());
 
 			PluginRegistry::NotifyElementCreate(element.get());
+			return element;
 		}
-
-		return element;
 	}
 
 	return nullptr;
@@ -422,10 +417,11 @@ bool Factory::InstanceElementText(Element* parent, const String& in_text)
 	bool has_data_expression = false;
 
 	bool inside_brackets = false;
+	bool inside_string = false;
 	char previous = 0;
 	for (const char c : text)
 	{
-		const char* error_str = XMLParseTools::ParseDataBrackets(inside_brackets, c, previous);
+		const char* error_str = XMLParseTools::ParseDataBrackets(inside_brackets, inside_string, c, previous);
 		if (error_str)
 		{
 			Log::Message(Log::LT_WARNING, "Failed to instance text element '%s'. %s", text.c_str(), error_str);
