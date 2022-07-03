@@ -298,6 +298,14 @@ select selectbox option.disabled {
 	<p data-if="show_text">The quick brown fox jumps over the lazy {{animal}}.</p>
 	<input type="text" data-value="animal"/>
 </panel>
+<tab>Basic Pointers</tab>
+<panel data-model="basicptrs">
+	<h1>{{title}}</h1>
+	<p>This is null struct pointer: {{ptr_null}}</p>
+	<p>This is non-null struct pointer: {{ptr}}</p>
+	<p>This is null scalar pointer: {{i_null}}</p>
+	<p>This is non-null scalar pointer: {{i}}</p>
+</panel>
 <tab>Events</tab>
 <panel id="welcome" data-model="events">
 	<p class="title" style="margin-top: 1.8em;">{{hello_world}}<span style="color: blue;"> Rated: {{rating}}</span></p>
