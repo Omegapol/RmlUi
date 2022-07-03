@@ -141,7 +141,12 @@ BasePointerDefinition::BasePointerDefinition(VariableDefinition* underlying_defi
 
 bool BasePointerDefinition::Get(void* ptr, Variant& variant)
 {
-    return underlying_definition->Get(DereferencePointer(ptr), variant);
+	auto new_pointer = DereferencePointer(ptr);
+	if(new_pointer == nullptr) {
+		variant = (void*) nullptr;
+		return true;
+	}
+    return underlying_definition->Get(new_pointer, variant);
 }
 
 bool BasePointerDefinition::Set(void* ptr, const Variant& variant)
@@ -156,7 +161,10 @@ int BasePointerDefinition::Size(void* ptr)
 
 DataVariable BasePointerDefinition::Child(void* ptr, const DataAddressEntry& address)
 {
-    return underlying_definition->Child(DereferencePointer(ptr), address);
+	auto new_pointer = DereferencePointer(ptr);
+	if(new_pointer == nullptr)
+		return DataVariable(NullPointerDefinition::getInstance(), nullptr);
+	return underlying_definition->Child(new_pointer, address);
 }
 
 } // namespace Rml

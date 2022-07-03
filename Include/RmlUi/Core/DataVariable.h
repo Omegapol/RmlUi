@@ -149,8 +149,24 @@ private:
 	DataTypeSetFunc<T> set;
 };
 
+class NullPointerDefinition: public VariableDefinition {
+public:
+	NullPointerDefinition() : VariableDefinition(DataVariableType::Scalar) {};
+	bool Get(void* ptr, Variant& variant) override {
+		variant = Variant((void*) nullptr);
+		return true;
+	}
+	DataVariable Child(void* ptr, const DataAddressEntry& address) override {
+		return {getInstance(), nullptr};
+	}
 
-class RMLUICORE_API StructDefinition final : public VariableDefinition {
+	static NullPointerDefinition* getInstance() {
+		static NullPointerDefinition nullDef;
+		return &nullDef;
+	}
+};
+
+class StructDefinition final : public VariableDefinition {
 public:
 	StructDefinition();
 
