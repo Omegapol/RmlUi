@@ -317,16 +317,16 @@ TEST_CASE("Data variables pointers - nulls")
 			/*"exampleunq2", - this is not null*/ /*"exampleunq2.fooptr", - this is not null*/ "exampleunq2.fooptr.scalarptr", "exampleunq2.fooptr.yesptr"
 
 		};
-		Vector<String> expected_results = {
-			"0x00000000","0x00000000","0x00000000","0x00000000",
-			"0x00000000","0x00000000","0x00000000","0x00000000",
-			"0x00000000","0x00000000","0x00000000","0x00000000",
-			"0x00000000","0x00000000","0x00000000","0x00000000","0x00000000","0x00000000",
-			"0x00000000","0x00000000",
-			"0x00000000","0x00000000",
+		Vector<void*> expected_results = {
+			nullptr,nullptr,nullptr,nullptr,
+			nullptr,nullptr,nullptr,nullptr,
+			nullptr,nullptr,nullptr,nullptr,
+			nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,
+			nullptr,nullptr,
+			nullptr,nullptr,
 		};
 
-		Vector<String> results;
+		Vector<void*> results;
 
 		for (auto& str_address : test_addresses)
 		{
@@ -334,7 +334,7 @@ TEST_CASE("Data variables pointers - nulls")
 
 			Variant result;
 			model.GetVariableInto(address, result);
-			results.push_back(result.Get<String>());
+			results.push_back(result.Get<void*>());
 		}
 		CHECK(results == expected_results);
 	}
