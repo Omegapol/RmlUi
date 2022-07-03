@@ -51,9 +51,9 @@ DataVariableType DataVariable::Type() {
 }
 
 
-bool VariableDefinition::Get(void* /*ptr*/, Variant& /*variant*/) {
-    Log::Message(Log::LT_WARNING, "Values can only be retrieved from scalar data types.");
-    return false;
+bool VariableDefinition::Get(void* ptr, Variant& variant) {
+	variant = ptr;
+	return true;
 }
 bool VariableDefinition::Set(void* /*ptr*/, const Variant& /*variant*/) {
     Log::Message(Log::LT_WARNING, "Values can only be assigned to scalar data types.");
