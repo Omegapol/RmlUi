@@ -365,6 +365,16 @@ public:
 	static bool Convert(const unsigned long long& src, String& dest) { return FormatString(dest, 32, "%llu", src) > 0; }
 };
 
+template<>
+class TypeConverter<void*, String >
+{
+public:
+	static bool Convert(void*& src, String& dest)
+	{
+		return FormatString(dest, 32, "0x%p", src) > 0;
+	}
+};
+
 template <>
 class TypeConverter<byte, String> {
 public:
