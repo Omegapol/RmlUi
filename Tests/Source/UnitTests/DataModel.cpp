@@ -213,13 +213,13 @@ TEST_CASE("Data variables pointers")
 		*example.fooshr = example.foo;
 
 		Vector<String> test_addresses = {
-			"example.scalar", "example.scalarptr", "example.scalarptr2",
+			"example.scalar", "example.scalarptr",  /*"example.scalarptr2", */
 			"example.foo.scalar", "example.foo.scalarptr", /*const "example.foo.scalarptr2", */ "example.foo.string",
 			"example.fooptr.scalar", "example.fooptr.scalarptr", /*const "example.fooptr.scalarptr2" ,*/ "example.fooptr.string",
 			"example.fooshr.scalar", "example.fooshr.scalarptr", /*const "example.fooshr.scalarptr2", */ "example.fooshr.string"
 		};
 		Vector<String> expected_results = {
-			ToString(example.scalar), ToString(*example.scalarptr), ToString(*example.scalarptr2),
+			ToString(example.scalar), ToString(*example.scalarptr), /*const ToString(*example.scalarptr2), */
 			ToString(example.foo.scalar), ToString(*example.foo.scalarptr), /*const ToString(*example.foo.scalarptr2) ,*/ ToString(example.foo.scalar_string),
 			ToString(example.fooptr->scalar), ToString(*example.fooptr->scalarptr), /*const ToString(*example.fooptr->scalarptr2),*/ ToString(example.fooptr->scalar_string),
 			ToString(example.fooshr->scalar), ToString(*example.fooshr->scalarptr), /*const ToString(*example.fooshr->scalarptr2) ,*/ ToString(example.fooshr->scalar_string)
