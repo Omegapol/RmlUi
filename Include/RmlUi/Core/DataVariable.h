@@ -152,11 +152,11 @@ private:
 class NullPointerDefinition: public VariableDefinition {
 public:
 	NullPointerDefinition() : VariableDefinition(DataVariableType::Scalar) {};
-	bool Get(void* ptr, Variant& variant) override {
+	bool Get(void* /*ptr*/, Variant& variant) override {
 		variant = Variant((void*) nullptr);
 		return true;
 	}
-	DataVariable Child(void* ptr, const DataAddressEntry& address) override {
+	DataVariable Child(void* /*ptr*/, const DataAddressEntry& /*address*/) override {
 		return {getInstance(), nullptr};
 	}
 
