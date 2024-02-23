@@ -93,7 +93,7 @@ public:
 	template<typename T, typename Source = void>
 	VariableDefinition* GetDefinition()
 	{
-		return GetDefinitionDetail<get_definition_type<Source, T>::type>();
+		return GetDefinitionDetail<typename get_definition_type<Source, T>::type>();
 	}
 
 	inline TransformFuncRegister* GetTransformFuncRegister() {
