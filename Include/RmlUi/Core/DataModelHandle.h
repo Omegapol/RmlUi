@@ -147,7 +147,7 @@ inline bool DataModelConstructor::RegisterScalar(DataTypeGetFunc<T> get_func, Da
 {
 	return RegisterScalarImpl<T>(get_func, set_func)
 		   &&
-		   RegisterScalarImpl<const T>(get_func, set_func);
+		   RegisterScalarImpl<const T>(get_func);
 }
 
 template<typename T>
