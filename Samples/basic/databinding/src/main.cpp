@@ -239,7 +239,7 @@ namespace InvadersExample {
 
 		// Register a custom getter for the Colourb type.
 		constructor.RegisterScalar<Rml::Colourb>(
-			[](const Rml::Colourb& color, Rml::Variant& variant) {
+			[](const Rml::Colourb* color, Rml::Variant& variant) {
 				variant = "rgba(" + Rml::ToString(color) + ')';
 			}
 		);
