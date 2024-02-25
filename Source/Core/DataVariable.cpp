@@ -109,22 +109,30 @@ BasePointerDefinition::BasePointerDefinition(VariableDefinition* underlying_defi
 
 bool BasePointerDefinition::Get(DataPointer ptr, Variant& variant)
 {
-    return underlying_definition->Get(DereferencePointer(ptr), variant);
+	if (!ptr)
+		return false;
+	return underlying_definition->Get(DereferencePointer(ptr), variant);
 }
 
 bool BasePointerDefinition::Set(DataPointer ptr, const Variant& variant)
 {
-    return underlying_definition->Set(DereferencePointer(ptr), variant);
+	if (!ptr)
+		return false;
+	return underlying_definition->Set(DereferencePointer(ptr), variant);
 }
 
 int BasePointerDefinition::Size(DataPointer ptr)
 {
-    return underlying_definition->Size(DereferencePointer(ptr));
+	if (!ptr)
+		return 0;
+	return underlying_definition->Size(DereferencePointer(ptr));
 }
 
 DataVariable BasePointerDefinition::Child(DataPointer ptr, const DataAddressEntry& address)
 {
-    return underlying_definition->Child(DereferencePointer(ptr), address);
+	if (!ptr)
+		return DataVariable();
+	return underlying_definition->Child(DereferencePointer(ptr), address);
 }
 
 } // namespace Rml
