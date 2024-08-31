@@ -4,7 +4,7 @@
  * For the latest information, see http://github.com/mikke89/RmlUi
  *
  * Copyright (c) 2008-2010 CodePoint Ltd, Shift Technology Ltd
- * Copyright (c) 2019 The RmlUi Team, and contributors
+ * Copyright (c) 2019-2023 The RmlUi Team, and contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,18 +26,19 @@
  *
  */
 
-#include "TestConfig.h"
-#include "TestViewer.h"
-#include "TestNavigator.h"
 #include "CaptureScreen.h"
+#include "TestConfig.h"
+#include "TestNavigator.h"
 #include "TestSuite.h"
+#include "TestViewer.h"
 #include <RmlUi/Core/Context.h>
 #include <RmlUi/Core/Core.h>
 #include <RmlUi/Core/Element.h>
 #include <RmlUi/Debugger.h>
+#include <PlatformExtensions.h>
+#include <RmlUi_Backend.h>
 #include <Shell.h>
-#include <Input.h>
-#include <ShellRenderInterfaceOpenGL.h>
+#include <stdio.h>
 #include <RmlUi/Core/DataModelHandle.h>
 
 
@@ -76,51 +77,66 @@ void GameLoop()
 
 
 #if defined RMLUI_PLATFORM_WIN32
-#include <windows.h>
-#include <Core/DataModel.h>
-#include <Core/Elements/ElementGraph/DataFeed.h>
-
-int APIENTRY WinMain(HINSTANCE RMLUI_UNUSED_PARAMETER(instance_handle), HINSTANCE RMLUI_UNUSED_PARAMETER(previous_instance_handle), char* RMLUI_UNUSED_PARAMETER(command_line), int RMLUI_UNUSED_PARAMETER(command_show))
+	#include <RmlUi_Include_Windows.h>
+	#include <Core/DataModel.h>
+	#include <Core/Elements/ElementGraph/DataFeed.h>
+int APIENTRY WinMain(HINSTANCE /*instance_handle*/, HINSTANCE /*previous_instance_handle*/, char* win_command_line, int /*command_show*/)
 #else
-int main(int RMLUI_UNUSED_PARAMETER(argc), char** RMLUI_UNUSED_PARAMETER(argv))
+int main(int argc, char** argv)
 #endif
 {
+	const char* command_line = nullptr;
+
 #ifdef RMLUI_PLATFORM_WIN32
-	RMLUI_UNUSED(instance_handle);
-	RMLUI_UNUSED(previous_instance_handle);
-	RMLUI_UNUSED(command_line);
-	RMLUI_UNUSED(command_show);
+	command_line = win_command_line;
 #else
-	RMLUI_UNUSED(argc);
-	RMLUI_UNUSED(argv);
+	if (argc > 1)
+		command_line = argv[1];
 #endif
+	int load_suite_index = -1;
+	int load_case_index = -1;
+
+	// Parse command line as <case_index> *or* <suite_index>:<case_index>.
+	if (command_line)
+	{
+		int first_argument = -1;
+		int second_argument = -1;
+		const int num_arguments = sscanf(command_line, "%d:%d", &first_argument, &second_argument);
+
+		switch (num_arguments)
+		{
+		case 1: load_case_index = first_argument - 1; break;
+		case 2:
+			load_suite_index = first_argument - 1;
+			load_case_index = second_argument - 1;
+			break;
+		}
+	}
 
 	int window_width = 1500;
 	int window_height = 800;
 
-	ShellRenderInterfaceOpenGL opengl_renderer;
-	shell_renderer = &opengl_renderer;
+	// Initializes the shell which provides common functionality used by the included samples.
+	if (!Shell::Initialize())
+		return -1;
 
-	// Generic OS initialisation, creates a window and attaches OpenGL.
-	if (!Shell::Initialise() ||
-		!Shell::OpenWindow("Visual tests", shell_renderer, window_width, window_height, true))
+	// Constructs the system and render interfaces, creates a window, and attaches the renderer.
+	if (!Backend::Initialize("Visual tests", window_width, window_height, true))
 	{
 		Shell::Shutdown();
 		return -1;
 	}
 
+	// Install the custom interfaces constructed by the backend before initializing RmlUi.
+	Rml::SetSystemInterface(Backend::GetSystemInterface());
+	Rml::SetRenderInterface(Backend::GetRenderInterface());
+
 	// RmlUi initialisation.
-	Rml::SetRenderInterface(&opengl_renderer);
-	shell_renderer->SetViewport(window_width, window_height);
-
-	ShellSystemInterface system_interface;
-	Rml::SetSystemInterface(&system_interface);
-
 	Rml::Initialise();
 
-	// Create the main RmlUi context and set it on the shell's input layer.
-	context = Rml::CreateContext("main", Rml::Vector2i(window_width, window_height));
-	if (context == nullptr)
+	// Create the main RmlUi context.
+	Rml::Context* context = Rml::CreateContext("main", Rml::Vector2i(window_width, window_height));
+	if (!context)
 	{
 		Rml::Shutdown();
 		Shell::Shutdown();
@@ -128,8 +144,8 @@ int main(int RMLUI_UNUSED_PARAMETER(argc), char** RMLUI_UNUSED_PARAMETER(argv))
 	}
 
 	Rml::Debugger::Initialise(context);
-	Input::SetContext(context);
-	Shell::SetContext(context);
+	Shell::LoadFonts();
+	context->SetDefaultScrollBehavior(Rml::ScrollBehavior::Instant, 1.f);
 
 	Rml::DataModelConstructor constructor = context->CreateDataModel("data");
 	if (auto handle = constructor.RegisterStruct<Rml::Vector2f>())
@@ -220,9 +236,6 @@ int main(int RMLUI_UNUSED_PARAMETER(argc), char** RMLUI_UNUSED_PARAMETER(argv))
 	}
 	constructor.Bind("sine", vec4);
 
-
-	Shell::LoadFonts("assets/");
-
 	{
 		const Rml::StringList directories = GetTestInputDirectories();
 
@@ -230,34 +243,39 @@ int main(int RMLUI_UNUSED_PARAMETER(argc), char** RMLUI_UNUSED_PARAMETER(argv))
 
 		for (const Rml::String& directory : directories)
 		{
-			const Rml::StringList files = Shell::ListFiles(directory, "rml");
+			const Rml::StringList files = PlatformExtensions::ListFiles(directory, "rml");
 
 			if (files.empty())
-			{
 				Rml::Log::Message(Rml::Log::LT_WARNING, "Could not find any *.rml files in directory '%s'. Ignoring.", directory.c_str());
-			}
 			else
-			{
 				test_suites.emplace_back(directory, std::move(files));
-			}
 		}
 
 		RMLUI_ASSERTMSG(!test_suites.empty(), "RML test files directory not found or empty.");
 
 		TestViewer viewer(context);
 
-		TestNavigator navigator(shell_renderer, context, &viewer, std::move(test_suites));
-		g_navigator = &navigator;
+		TestNavigator navigator(Backend::GetRenderInterface(), context, &viewer, std::move(test_suites), load_suite_index, load_case_index);
 
-		Shell::EventLoop(GameLoop);
+		bool running = true;
+		while (running)
+		{
+			running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts);
 
-		g_navigator = nullptr;
+			context->Update();
+
+			Backend::BeginFrame();
+			context->Render();
+			navigator.Render();
+			Backend::PresentFrame();
+
+			navigator.Update();
+		}
 	}
 
 	Rml::Shutdown();
-
-	Shell::CloseWindow();
 	Shell::Shutdown();
+	Backend::Shutdown();
 
 	return 0;
 }

@@ -4,7 +4,7 @@
  * For the latest information, see http://github.com/mikke89/RmlUi
  *
  * Copyright (c) 2008-2010 CodePoint Ltd, Shift Technology Ltd
- * Copyright (c) 2019 The RmlUi Team, and contributors
+ * Copyright (c) 2019-2023 The RmlUi Team, and contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -15,7 +15,7 @@
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,12 +27,14 @@
  */
 
 #include "ElementGame.h"
-#include <RmlUi/Core/Context.h>
-#include <RmlUi/Core/ElementDocument.h>
-#include <RmlUi/Core/Input.h>
 #include "Defender.h"
 #include "EventManager.h"
 #include "Game.h"
+#include <RmlUi/Core/Context.h>
+#include <RmlUi/Core/Core.h>
+#include <RmlUi/Core/ElementDocument.h>
+#include <RmlUi/Core/Input.h>
+#include <RmlUi/Core/SystemInterface.h>
 
 ElementGame::ElementGame(const Rml::String& tag) : Rml::Element(tag)
 {
@@ -40,24 +42,16 @@ ElementGame::ElementGame(const Rml::String& tag) : Rml::Element(tag)
 }
 
 ElementGame::~ElementGame()
-{		
+{
 	delete game;
 }
 
-// Intercepts and handles key events.
 void ElementGame::ProcessEvent(Rml::Event& event)
 {
-	if (event == Rml::EventId::Keydown ||
-		event == Rml::EventId::Keyup)
+	if (event == Rml::EventId::Keydown || event == Rml::EventId::Keyup)
 	{
 		bool key_down = (event == Rml::EventId::Keydown);
-		Rml::Input::KeyIdentifier key_identifier = (Rml::Input::KeyIdentifier) event.GetParameter< int >("key_identifier", 0);
-
-		if (key_identifier == Rml::Input::KI_ESCAPE &&
-			!key_down)
-		{
-			EventManager::LoadWindow("pause");
-		}
+		Rml::Input::KeyIdentifier key_identifier = (Rml::Input::KeyIdentifier)event.GetParameter<int>("key_identifier", 0);
 
 		// Process left and right keys
 		if (key_down)
@@ -68,13 +62,13 @@ void ElementGame::ProcessEvent(Rml::Event& event)
 				game->GetDefender()->StartMove(1.0f);
 			if (key_identifier == Rml::Input::KI_SPACE)
 				game->GetDefender()->Fire();
-		}		
+		}
 		else if (!key_down)
 		{
 			if (key_identifier == Rml::Input::KI_LEFT)
 				game->GetDefender()->StopMove(-1.0f);
 			if (key_identifier == Rml::Input::KI_RIGHT)
-				game->GetDefender()->StopMove(1.0f);				
+				game->GetDefender()->StopMove(1.0f);
 		}
 	}
 
@@ -84,16 +78,15 @@ void ElementGame::ProcessEvent(Rml::Event& event)
 	}
 }
 
-// Updates the game.
 void ElementGame::OnUpdate()
 {
-	game->Update();
+	game->Update(Rml::GetSystemInterface()->GetElapsedTime());
 }
 
-// Renders the game.
 void ElementGame::OnRender()
 {
-	game->Render(GetContext()->GetDensityIndependentPixelRatio());
+	if (Rml::Context* context = GetContext())
+		game->Render(context->GetRenderManager(), context->GetDensityIndependentPixelRatio());
 }
 
 void ElementGame::OnChildAdd(Rml::Element* element)
@@ -105,5 +98,17 @@ void ElementGame::OnChildAdd(Rml::Element* element)
 		GetOwnerDocument()->AddEventListener(Rml::EventId::Load, this);
 		GetOwnerDocument()->AddEventListener(Rml::EventId::Keydown, this);
 		GetOwnerDocument()->AddEventListener(Rml::EventId::Keyup, this);
+	}
+}
+
+void ElementGame::OnChildRemove(Rml::Element* element)
+{
+	Rml::Element::OnChildRemove(element);
+
+	if (element == this)
+	{
+		GetOwnerDocument()->RemoveEventListener(Rml::EventId::Load, this);
+		GetOwnerDocument()->RemoveEventListener(Rml::EventId::Keydown, this);
+		GetOwnerDocument()->RemoveEventListener(Rml::EventId::Keyup, this);
 	}
 }

@@ -1,11 +1,14 @@
 ﻿AccessModifierOffset: -4
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
 AlignAfterOpenBracket: DontAlign
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignEscapedNewlines: Left
+AlignOperands: false
 AlignTrailingComments: true
 AllowShortBlocksOnASingleLine: Empty
-AllowShortCaseLabelsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Inline
 AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: true
@@ -25,6 +28,9 @@ CompactNamespaces: false
 Cpp11BracedListStyle: true
 FixNamespaceComments: true
 IncludeBlocks: Merge
+IncludeCategories:
+  - Regex:           '^<RmlUi/'
+    Priority:        1
 IndentCaseLabels: false
 IndentPPDirectives: BeforeHash
 IndentWidth: 4
@@ -34,6 +40,7 @@ Language: Cpp
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: Inner
 PointerAlignment: Left
+QualifierAlignment: Left
 ReflowComments: true
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
@@ -57,3 +64,4 @@ StatementMacros:
   - RMLUI_RTTI_DefineWithParent
 TabWidth: 4
 UseTab: AlignWithSpaces
+WhitespaceSensitiveMacros: ['RMLUI_STRINGIFY']

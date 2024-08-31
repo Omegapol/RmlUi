@@ -4,7 +4,7 @@
  * For the latest information, see http://github.com/mikke89/RmlUi
  *
  * Copyright (c) 2008-2010 CodePoint Ltd, Shift Technology Ltd
- * Copyright (c) 2019 The RmlUi Team, and contributors
+ * Copyright (c) 2019-2023 The RmlUi Team, and contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -15,7 +15,7 @@
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,15 +28,12 @@
 
 #include <RmlUi/Core.h>
 #include <RmlUi/Debugger.h>
-#include <Input.h>
+#include <RmlUi_Backend.h>
 #include <Shell.h>
-#include <ShellRenderInterfaceOpenGL.h>
 
-
-class DemoWindow
-{
+class DemoWindow {
 public:
-	DemoWindow(const Rml::String &title, Rml::Context *context)
+	DemoWindow(const Rml::String& title, Rml::Context* context)
 	{
 		using namespace Rml;
 		document = context->LoadDocument("basic/benchmark/data/benchmark.rml");
@@ -65,7 +62,7 @@ public:
 			int route = rand() % 50;
 			int max = (rand() % 40) + 10;
 			int value = rand() % max;
-			Rml::String rml_row = Rml::CreateString(1000, R"(
+			Rml::String rml_row = Rml::CreateString(R"(
 			<div class="row">
 				<div class="col col1"><button class="expand" index="%d">+</button>&nbsp;<a>Route %d</a></div>
 				<div class="col col23"><input type="range" class="assign_range" min="0" max="%d" value="%d"/></div>
@@ -80,11 +77,7 @@ public:
 					</div>
 				</div>
 			</div>)",
-				index, 
-				route,
-				max,
-				value
-			);
+				index, route, max, value);
 			rml += rml_row;
 		}
 
@@ -94,7 +87,8 @@ public:
 
 	class SimpleEventListener : public Rml::EventListener {
 	public:
-		void ProcessEvent(Rml::Event& event) override {
+		void ProcessEvent(Rml::Event& event) override
+		{
 			static int i = 0;
 			event.GetTargetElement()->SetProperty("background-color", i++ % 2 == 0 ? "green" : "orange");
 		}
@@ -108,76 +102,18 @@ public:
 		}
 	}
 
-	Rml::ElementDocument * GetDocument() {
-		return document;
-	}
+	Rml::ElementDocument* GetDocument() { return document; }
 
 private:
-	Rml::ElementDocument *document;
+	Rml::ElementDocument* document;
 };
-
-
-Rml::Context* context = nullptr;
-ShellRenderInterfaceExtensions *shell_renderer;
-DemoWindow* window = nullptr;
 
 bool run_loop = true;
 bool single_loop = true;
 bool run_update = true;
 bool single_update = true;
 
-void GameLoop()
-{
-	if (run_update || single_update)
-	{
-		single_update = false;
-
-		window->performance_test();
-	}
-
-	if (run_loop || single_loop)
-	{
-		single_loop = false;
-	
-		context->Update();
-
-		shell_renderer->PrepareRenderBuffer();
-		context->Render();
-		shell_renderer->PresentRenderBuffer();
-	}
-
-	static constexpr int buffer_size = 200;
-	static float fps_buffer[buffer_size] = {};
-	static int buffer_index = 0;
-
-	static double t_prev = 0.0f;
-	double t = Shell::GetElapsedTime();
-	float dt = float(t - t_prev);
-	t_prev = t;
-	static int count_frames = 0;
-	count_frames += 1;
-
-	float fps = 1.0f / dt;
-	fps_buffer[buffer_index] = fps;
-	buffer_index = ((buffer_index + 1) % buffer_size);
-
-	if (window && count_frames > buffer_size / 8)
-	{
-		float fps_mean = 0;
-		for (int i = 0; i < buffer_size; i++)
-			fps_mean += fps_buffer[(buffer_index + i) % buffer_size];
-		fps_mean = fps_mean / (float)buffer_size;
-
-		auto el = window->GetDocument()->GetElementById("fps");
-		count_frames = 0;
-		el->SetInnerRML(Rml::CreateString(20, "FPS: %f", fps_mean));
-	}
-}
-
-
-
-class Event : public Rml::EventListener
-{
+class Event : public Rml::EventListener {
 public:
 	Event(const Rml::String& value) : value(value) {}
 
@@ -185,12 +121,12 @@ public:
 	{
 		using namespace Rml;
 
-		if(value == "exit")
-			Shell::RequestExit();
+		if (value == "exit")
+			Backend::RequestExit();
 
 		if (event == "keydown")
 		{
-			auto key_identifier = (Rml::Input::KeyIdentifier)event.GetParameter< int >("key_identifier", 0);
+			auto key_identifier = (Rml::Input::KeyIdentifier)event.GetParameter<int>("key_identifier", 0);
 
 			if (key_identifier == Rml::Input::KI_SPACE)
 			{
@@ -212,7 +148,7 @@ public:
 			}
 			else if (key_identifier == Rml::Input::KI_ESCAPE)
 			{
-				Shell::RequestExit();
+				Backend::RequestExit();
 			}
 		}
 	}
@@ -223,91 +159,119 @@ private:
 	Rml::String value;
 };
 
-
-class EventInstancer : public Rml::EventListenerInstancer
-{
+class EventInstancer : public Rml::EventListenerInstancer {
 public:
-
 	/// Instances a new event handle for Invaders.
-	Rml::EventListener* InstanceEventListener(const Rml::String& value, Rml::Element* /*element*/) override
-	{
-		return new Event(value);
-	}
+	Rml::EventListener* InstanceEventListener(const Rml::String& value, Rml::Element* /*element*/) override { return new Event(value); }
 };
 
-
 #if defined RMLUI_PLATFORM_WIN32
-#include <windows.h>
-int APIENTRY WinMain(HINSTANCE RMLUI_UNUSED_PARAMETER(instance_handle), HINSTANCE RMLUI_UNUSED_PARAMETER(previous_instance_handle), char* RMLUI_UNUSED_PARAMETER(command_line), int RMLUI_UNUSED_PARAMETER(command_show))
+	#include <RmlUi_Include_Windows.h>
+int APIENTRY WinMain(HINSTANCE /*instance_handle*/, HINSTANCE /*previous_instance_handle*/, char* /*command_line*/, int /*command_show*/)
 #else
-int main(int RMLUI_UNUSED_PARAMETER(argc), char** RMLUI_UNUSED_PARAMETER(argv))
+int main(int /*argc*/, char** /*argv*/)
 #endif
 {
-#ifdef RMLUI_PLATFORM_WIN32
-	RMLUI_UNUSED(instance_handle);
-	RMLUI_UNUSED(previous_instance_handle);
-	RMLUI_UNUSED(command_line);
-	RMLUI_UNUSED(command_show);
-#else
-	RMLUI_UNUSED(argc);
-	RMLUI_UNUSED(argv);
-#endif
+	const int window_width = 1800;
+	const int window_height = 1000;
 
-	const int width = 1800;
-	const int height = 1000;
+	// Initializes the shell which provides common functionality used by the included samples.
+	if (!Shell::Initialize())
+		return -1;
 
-	ShellRenderInterfaceOpenGL opengl_renderer;
-	shell_renderer = &opengl_renderer;
-
-	// Generic OS initialisation, creates a window and attaches OpenGL.
-	if (!Shell::Initialise() ||
-		!Shell::OpenWindow("Benchmark Sample", shell_renderer, width, height, true))
+	// Constructs the system and render interfaces, creates a window, and attaches the renderer.
+	if (!Backend::Initialize("Benchmark Sample", window_width, window_height, true))
 	{
 		Shell::Shutdown();
 		return -1;
 	}
 
+	// Install the custom interfaces constructed by the backend before initializing RmlUi.
+	Rml::SetSystemInterface(Backend::GetSystemInterface());
+	Rml::SetRenderInterface(Backend::GetRenderInterface());
+
 	// RmlUi initialisation.
-	Rml::SetRenderInterface(&opengl_renderer);
-	opengl_renderer.SetViewport(width, height);
-
-	ShellSystemInterface system_interface;
-	Rml::SetSystemInterface(&system_interface);
-
 	Rml::Initialise();
 
-	// Create the main RmlUi context and set it on the shell's input layer.
-	context = Rml::CreateContext("main", Rml::Vector2i(width, height));
-	if (context == nullptr)
+	// Create the main RmlUi context.
+	Rml::Context* context = Rml::CreateContext("main", Rml::Vector2i(window_width, window_height));
+	if (!context)
 	{
 		Rml::Shutdown();
+		Backend::Shutdown();
 		Shell::Shutdown();
 		return -1;
 	}
 
 	Rml::Debugger::Initialise(context);
-	Input::SetContext(context);
-	Shell::SetContext(context);
 
 	EventInstancer event_listener_instancer;
 	Rml::Factory::RegisterEventListenerInstancer(&event_listener_instancer);
 
-	Shell::LoadFonts("assets/");
+	Shell::LoadFonts();
 
-	window = new DemoWindow("Benchmark sample", context);
+	Rml::UniquePtr<DemoWindow> window = Rml::MakeUnique<DemoWindow>("Benchmark sample", context);
 	window->GetDocument()->AddEventListener(Rml::EventId::Keydown, new Event("hello"));
 	window->GetDocument()->AddEventListener(Rml::EventId::Keyup, new Event("hello"));
 	window->GetDocument()->AddEventListener(Rml::EventId::Animationend, new Event("hello"));
 
+	bool running = true;
+	while (running)
+	{
+		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts);
 
-	Shell::EventLoop(GameLoop);
+		if (run_update || single_update)
+		{
+			single_update = false;
 
-	delete window;
+			window->performance_test();
+		}
+
+		if (run_loop || single_loop)
+		{
+			single_loop = false;
+
+			context->Update();
+
+			Backend::BeginFrame();
+			context->Render();
+			Backend::PresentFrame();
+		}
+
+		static constexpr int buffer_size = 200;
+		static float fps_buffer[buffer_size] = {};
+		static int buffer_index = 0;
+
+		static double t_prev = 0.0f;
+		double t = Rml::GetSystemInterface()->GetElapsedTime();
+		float dt = float(t - t_prev);
+		t_prev = t;
+		static int count_frames = 0;
+		count_frames += 1;
+
+		float fps = 1.0f / dt;
+		fps_buffer[buffer_index] = fps;
+		buffer_index = ((buffer_index + 1) % buffer_size);
+
+		if (window && count_frames > buffer_size / 8)
+		{
+			float fps_mean = 0;
+			for (int i = 0; i < buffer_size; i++)
+				fps_mean += fps_buffer[(buffer_index + i) % buffer_size];
+			fps_mean = fps_mean / (float)buffer_size;
+
+			auto el = window->GetDocument()->GetElementById("fps");
+			count_frames = 0;
+			el->SetInnerRML(Rml::CreateString("FPS: %f", fps_mean));
+		}
+	}
+
+	window.reset();
 
 	// Shutdown RmlUi.
 	Rml::Shutdown();
 
-	Shell::CloseWindow();
+	Backend::Shutdown();
 	Shell::Shutdown();
 
 	return 0;

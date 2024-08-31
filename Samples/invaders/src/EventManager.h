@@ -4,7 +4,7 @@
  * For the latest information, see http://github.com/mikke89/RmlUi
  *
  * Copyright (c) 2008-2010 CodePoint Ltd, Shift Technology Ltd
- * Copyright (c) 2019 The RmlUi Team, and contributors
+ * Copyright (c) 2019-2023 The RmlUi Team, and contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -15,7 +15,7 @@
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,17 +29,17 @@
 #ifndef RMLUI_INVADERS_EVENTMANAGER_H
 #define RMLUI_INVADERS_EVENTMANAGER_H
 
-#include <RmlUi/Core/Event.h>
 #include <RmlUi/Core/ElementDocument.h>
+#include <RmlUi/Core/Event.h>
+#include <RmlUi/Core/Types.h>
 
 class EventHandler;
 
 /**
-	@author Peter Curry
+    @author Peter Curry
  */
 
-class EventManager
-{
+class EventManager {
 public:
 	/// Releases all event handlers registered with the manager.
 	static void Shutdown();
@@ -47,7 +47,7 @@ public:
 	/// Registers a new event handler with the manager.
 	/// @param[in] handler_name The name of the handler; this must be the same as the window it is handling events for.
 	/// @param[in] handler The event handler.
-	static void RegisterEventHandler(const Rml::String& handler_name, EventHandler* handler);
+	static void RegisterEventHandler(const Rml::String& handler_name, Rml::UniquePtr<EventHandler> handler);
 
 	/// Processes an event coming through from RmlUi.
 	/// @param[in] event The RmlUi event that spawned the application event.
@@ -61,6 +61,5 @@ private:
 	EventManager();
 	~EventManager();
 };
-
 
 #endif

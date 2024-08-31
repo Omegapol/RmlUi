@@ -4,7 +4,7 @@
  * For the latest information, see http://github.com/mikke89/RmlUi
  *
  * Copyright (c) 2008-2010 CodePoint Ltd, Shift Technology Ltd
- * Copyright (c) 2019 The RmlUi Team, and contributors
+ * Copyright (c) 2019-2023 The RmlUi Team, and contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,22 +29,33 @@
 #ifndef RMLUI_TESTS_VISUALTESTS_CAPTURESCREEN_H
 #define RMLUI_TESTS_VISUALTESTS_CAPTURESCREEN_H
 
+#include <RmlUi/Core/Mesh.h>
+#include <RmlUi/Core/RenderInterface.h>
 #include <RmlUi/Core/Types.h>
-
-class ShellRenderInterfaceOpenGL;
 
 struct ComparisonResult {
 	bool skipped = true;
 	bool success = false;
 	bool is_equal = false;
 	double similarity_score = 0;
-	std::size_t absolute_difference_sum = 0;
+	size_t absolute_difference_sum = 0;
+	size_t max_absolute_difference_single_pixel = 0;
 	Rml::String error_msg;
 };
 
-bool CaptureScreenshot(ShellRenderInterfaceOpenGL* shell_renderer, const Rml::String& filename, int clip_width);
+struct TextureGeometry {
+	Rml::TextureHandle texture_handle = 0;
+	Rml::CompiledGeometryHandle geometry_handle = 0;
+	Rml::Mesh mesh;
+};
 
-ComparisonResult CompareScreenToPreviousCapture(ShellRenderInterfaceOpenGL* shell_renderer, const Rml::String& filename);
+bool CaptureScreenshot(const Rml::String& filename, int clip_width);
 
+ComparisonResult CompareScreenToPreviousCapture(Rml::RenderInterface* render_interface, const Rml::String& filename, TextureGeometry* out_reference,
+	TextureGeometry* out_highlight);
+
+void RenderTextureGeometry(Rml::RenderInterface* render_interface, TextureGeometry& geometry);
+
+void ReleaseTextureGeometry(Rml::RenderInterface* render_interface, TextureGeometry& geometry);
 
 #endif

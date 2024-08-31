@@ -4,7 +4,7 @@
  * For the latest information, see http://github.com/mikke89/RmlUi
  *
  * Copyright (c) 2008-2010 CodePoint Ltd, Shift Technology Ltd
- * Copyright (c) 2019 The RmlUi Team, and contributors
+ * Copyright (c) 2019-2023 The RmlUi Team, and contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,14 +27,15 @@
  */
 
 #include "TestViewer.h"
+#include "../Common/TestsShell.h"
 #include "TestConfig.h"
 #include "XmlNodeHandlers.h"
-#include "../Common/TestsShell.h"
 #include <RmlUi/Core/Context.h>
 #include <RmlUi/Core/Core.h>
 #include <RmlUi/Core/Element.h>
 #include <RmlUi/Core/ElementDocument.h>
 #include <RmlUi/Core/FileInterface.h>
+#include <RmlUi/Core/SystemInterface.h>
 #include <RmlUi/Core/Types.h>
 #include <RmlUi/Core/XMLParser.h>
 #include <Shell.h>
@@ -53,10 +54,8 @@ static void InitializeXmlNodeHandlers()
 	Rml::XMLParser::RegisterNodeHandler("link", link_handler);
 }
 
-
 class EventListenerLinks : public Rml::EventListener {
 public:
-
 	void ProcessEvent(Rml::Event& event) override
 	{
 		Rml::Element* element = event.GetCurrentElement();
@@ -64,12 +63,15 @@ public:
 
 		if (href.empty() || !hover_text)
 			return;
-		
+
 		if (event == Rml::EventId::Click)
 		{
-			Shell::SetClipboardText(href);
-			hover_text->SetInnerRML("Copied to clipboard");
-			hover_text->SetClass("confirmation", true);
+			if (Rml::SystemInterface* system_interface = Rml::GetSystemInterface())
+			{
+				system_interface->SetClipboardText(href);
+				hover_text->SetInnerRML("Copied to clipboard");
+				hover_text->SetClass("confirmation", true);
+			}
 		}
 		else if (event == Rml::EventId::Mouseover)
 		{
@@ -82,17 +84,12 @@ public:
 		}
 	}
 
-	void SetHoverTextElement(Element* element)
-	{
-		hover_text = element;
-	}
+	void SetHoverTextElement(Element* element) { hover_text = element; }
 
 private:
-
 	Element* hover_text = nullptr;
 };
 static EventListenerLinks event_listener_links;
-
 
 TestViewer::TestViewer(Rml::Context* context) : context(context)
 {
@@ -131,7 +128,7 @@ TestViewer::~TestViewer()
 {
 	event_listener_links.SetHoverTextElement(nullptr);
 
-	for (ElementDocument* doc : { document_test, document_description, document_source, document_reference, document_help })
+	for (ElementDocument* doc : {document_test, document_description, document_source, document_reference, document_help})
 	{
 		if (doc)
 			doc->Close();
@@ -185,12 +182,26 @@ bool TestViewer::IsHelpVisible() const
 	return document_help->IsVisible();
 }
 
-
-
-bool TestViewer::LoadTest(const Rml::String& directory, const Rml::String& filename, int test_index, int number_of_tests, int filtered_test_index, int filtered_number_of_tests, int suite_index, int number_of_suites)
+bool TestViewer::IsNavigationLocked() const
 {
+	if (Element* element = context->GetFocusElement())
+	{
+		if (document_test && element->GetOwnerDocument() == document_test)
+		{
+			if (document_test->HasAttribute("lock-navigation"))
+				return true;
+		}
+	}
+	return false;
+}
+
+bool TestViewer::LoadTest(const Rml::String& directory, const Rml::String& filename, int test_index, int number_of_tests, int filtered_test_index,
+	int filtered_number_of_tests, int suite_index, int number_of_suites, bool keep_scroll_position)
+{
+	float scroll_position = 0.f;
 	if (document_test)
 	{
+		scroll_position = document_test->GetScrollTop();
 		document_test->Close();
 		document_test = nullptr;
 	}
@@ -221,6 +232,8 @@ bool TestViewer::LoadTest(const Rml::String& directory, const Rml::String& filen
 			return false;
 
 		document_test->Show(ModalFlag::None, FocusFlag::None);
+		if (keep_scroll_position)
+			document_test->SetScrollTop(scroll_position);
 
 		for (const LinkItem& item : link_handler->GetLinkList())
 		{
@@ -242,7 +255,7 @@ bool TestViewer::LoadTest(const Rml::String& directory, const Rml::String& filen
 				document_reference = context->LoadDocumentFromMemory(source_reference, Rml::StringUtilities::Replace(reference_path, ':', '|'));
 				if (document_reference)
 				{
-					document_reference->SetProperty(PropertyId::Left, Property(510.f, Property::DP));
+					document_reference->SetProperty(PropertyId::Left, Property(510.f, Unit::DP));
 					document_reference->Show(ModalFlag::None, FocusFlag::None);
 				}
 			}
@@ -254,8 +267,8 @@ bool TestViewer::LoadTest(const Rml::String& directory, const Rml::String& filen
 		Element* description_header = document_description->GetElementById("header");
 		RMLUI_ASSERT(description_header);
 
-		description_header->SetInnerRML(CreateString(512, "Test suite %d of %d<br/>Test %d of %d<br/>",
-			suite_index + 1, number_of_suites, test_index + 1, number_of_tests));
+		description_header->SetInnerRML(
+			CreateString("Test suite %d of %d<br/>Test %d of %d<br/>", suite_index + 1, number_of_suites, test_index + 1, number_of_tests));
 	}
 
 	// Description Filter
@@ -265,18 +278,17 @@ bool TestViewer::LoadTest(const Rml::String& directory, const Rml::String& filen
 		if (filtered_number_of_tests == 0)
 			description_filter_text->SetInnerRML("No matches");
 		else if (filtered_number_of_tests < number_of_tests && filtered_test_index >= 0)
-			description_filter_text->SetInnerRML(CreateString(128, "Filtered %d of %d", filtered_test_index + 1, filtered_number_of_tests));
+			description_filter_text->SetInnerRML(CreateString("Filtered %d of %d", filtered_test_index + 1, filtered_number_of_tests));
 		else if (filtered_number_of_tests < number_of_tests && filtered_test_index < 0)
-			description_filter_text->SetInnerRML(CreateString(128, "Filtered X of %d", filtered_number_of_tests));
+			description_filter_text->SetInnerRML(CreateString("Filtered X of %d", filtered_number_of_tests));
 		else
 			description_filter_text->SetInnerRML("");
 	}
 
-
 	// Description Content
 	{
-		String rml_description = Rml::CreateString(512, "<h1>%s</h1><p><a href=\"%s\">%s</a>",
-			document_test->GetTitle().c_str(), test_path.c_str(), filename.c_str());
+		String rml_description =
+			Rml::CreateString("<h1>%s</h1><p><a href=\"%s\">%s</a>", document_test->GetTitle().c_str(), test_path.c_str(), filename.c_str());
 
 		if (!reference_filename.empty())
 		{
@@ -287,9 +299,8 @@ bool TestViewer::LoadTest(const Rml::String& directory, const Rml::String& filen
 		}
 		rml_description += "</p>";
 
-
 		const LinkList& link_list = link_handler->GetLinkList();
-		if(!link_list.empty())
+		if (!link_list.empty())
 		{
 			rml_description += "<p class=\"links\">";
 			for (const LinkItem& item : link_list)
@@ -316,7 +327,8 @@ bool TestViewer::LoadTest(const Rml::String& directory, const Rml::String& filen
 		Rml::ElementList link_elements;
 		description_content->GetElementsByTagName(link_elements, "a");
 
-		for (Rml::Element* element : link_elements) {
+		for (Rml::Element* element : link_elements)
+		{
 			element->AddEventListener(Rml::EventId::Click, &event_listener_links);
 			element->AddEventListener(Rml::EventId::Mouseover, &event_listener_links);
 			element->AddEventListener(Rml::EventId::Mouseout, &event_listener_links);
@@ -331,4 +343,12 @@ void TestViewer::SetGoToText(const Rml::String& rml)
 	Element* description_goto = document_description->GetElementById("goto");
 	RMLUI_ASSERT(description_goto);
 	description_goto->SetInnerRML(rml);
+}
+
+void TestViewer::SetAttention(bool active)
+{
+	if (active)
+		document_description->SetProperty(Rml::PropertyId::BackgroundColor, Rml::Property(Rml::Colourb(100, 100, 30), Rml::Unit::COLOUR));
+	else
+		document_description->RemoveProperty(Rml::PropertyId::BackgroundColor);
 }
