@@ -7,12 +7,12 @@
 
 #include "BaseGraph.h"
 
-#include "../../../Include/RmlUi/Core/Core.h"
-#include "../../../Include/RmlUi/Core/Context.h"
-#include "../../../Include/RmlUi/Core/FontEngineInterface.h"
+#include "RmlUi/Core/Core.h"
+#include "RmlUi/Core/Context.h"
+#include "RmlUi/Core/FontEngineInterface.h"
 
-#include "../../../Include/RmlUi/Core/GeometryUtilities.h"
-#include "../../../Include/RmlUi/Core/Elements/GraphFormatters.h"
+#include "RmlUi/Core/GeometryUtilities.h"
+#include "RmlUi/Core/Elements/GraphFormatters.h"
 
 namespace Rml {
 	class GraphScale : public ElementCanvasDrawable, public Element {
@@ -39,8 +39,7 @@ namespace Rml {
 				text_geometry[i].SetHostElement(this);
 		}
 
-		float GetScaleInterval(Vector2f RMLUI_UNUSED_PARAMETER(canvasSize), bool horizontal) {
-			RMLUI_UNUSED(canvasSize);
+		float GetScaleInterval(Vector2f /*canvasSize*/, bool horizontal) {
 			auto targetInterval = GetAttribute("interval", 10.0);
 			auto targetInterval_str = GetAttribute("interval", String("auto"));
 
@@ -61,12 +60,11 @@ namespace Rml {
 
 		Vector2f GetCanvasSize() override {
 			auto parent = GetParentNode();
-			Vector2f quad_size = parent->GetBox().GetSize(Box::CONTENT).Round();
+			Vector2f quad_size = parent->GetBox().GetSize(BoxArea::Content).Round();
 			return quad_size;
 		}
 
-		void RenderOnCanvas(Vector2f RMLUI_UNUSED_PARAMETER(canvas_size), Vector2f transl) override {
-			RMLUI_UNUSED(canvas_size);
+		void RenderOnCanvas(Vector2f /*canvas_size*/, Vector2f transl) override {
 			geometry.Render(transl);
 
 			for (size_t i = 0; i < text_geometry.size(); ++i)
@@ -75,12 +73,15 @@ namespace Rml {
 
 		void GenerateGeometry(Vector2f canvasSize) override {
 			// Release the old geometry before specifying the new vertices.
-			geometry.Release(true);
+			geometry.Release(Geometry::ReleaseMode::ClearMesh);
 			for (size_t i = 0; i < text_geometry.size(); ++i)
-				text_geometry[i].Release(true);
+				text_geometry[i].Release(Geometry::ReleaseMode::ClearMesh);
 
-			Vector <Vertex> &vertices = geometry.GetVertices();
-			Vector<int> &indices = geometry.GetIndices();
+			auto man = this->GetRenderManager();
+			auto mesh = Mesh();
+
+			Vector <Vertex> &vertices = mesh.vertices;
+			Vector<int> &indices = mesh.indices;
 
 			auto isHorizontal = GetAttribute("horizontal", String("true")) == "true";
 
@@ -229,6 +230,7 @@ namespace Rml {
 														 idx * 4);
 				}
 			}
+			geometry = man->MakeGeometry(std::move(mesh));
 		}
 	};
 }

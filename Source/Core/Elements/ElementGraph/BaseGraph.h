@@ -22,13 +22,13 @@ namespace Rml {
 		unsigned int target_size = 0;
 	};
 
-	template<typename DataFeed>
+	template <typename DataFeed>
 	struct CachedGraphData {
 		Rml::SharedPtr<typename DataFeed::Chunk> chunk;
 		Rml::SharedPtr<Geometry> geometry;
 	};
 
-	template<typename InputType>
+	template <typename InputType>
 	class BaseGraphImpl : public ElementCanvasDrawable, public ElementDataSink, public Element {
 		using DataFeedType = DataFeedBase<InputType>;
 
@@ -90,7 +90,7 @@ namespace Rml {
 		virtual GraphRenderMetadata GetMetadata(unsigned int input_size) = 0;
 	};
 
-	template<typename InputType>
+	template <typename InputType>
 	void BaseGraphImpl<InputType>::GenerateGeometry(Vector2f canvasSize) {
 		//todo: remove canvas, just read parent
 		if (HasAttribute("static") && HasAttribute("data-source"))
@@ -208,12 +208,12 @@ namespace Rml {
 		geometry_dirty = false;
 	}
 
-	template<typename InputType>
+	template <typename InputType>
 	BaseGraphImpl<InputType>::BaseGraphImpl(const String &tag): Element(tag) {
 
 	}
 
-	template<typename InputType>
+	template <typename InputType>
 	void BaseGraphImpl<InputType>::Render(Vector2f translation) {
 //		// Render the geometry beginning at this element's content region.
 		for (auto active_id: active_data) {
@@ -229,14 +229,14 @@ namespace Rml {
 		}
 	}
 
-	template<typename InputType>
+	template <typename InputType>
 	void BaseGraphImpl<InputType>::RenderOnCanvas(Vector2f canvas_size, Vector2f transl) {
 		if (geometry_dirty)
 			GenerateGeometry(canvas_size);
 		Render(transl);
 	}
 
-	template<typename InputType>
+	template <typename InputType>
 	bool BaseGraphImpl<InputType>::FeedData(DataVariable data) {
 		if (feed == nullptr) {
 			DoDataTransform(data);
@@ -246,7 +246,7 @@ namespace Rml {
 		return true;
 	}
 
-	template<typename InputType>
+	template <typename InputType>
 	bool BaseGraphImpl<InputType>::DoDataTransform(DataVariable data) {
 
 		auto transf_attrib = GetAttribute("transform");
@@ -272,8 +272,8 @@ namespace Rml {
 		return true;
 	}
 
-	template<typename InputType>
-	template<typename StartType>
+	template <typename InputType>
+	template <typename StartType>
 	bool BaseGraphImpl<InputType>::DoDataTransform(UniquePtr<DataFeedBase<StartType>> new_feed) {
 		auto transf_attrib = GetAttribute("transform");
 		auto transf = String("");
@@ -285,24 +285,24 @@ namespace Rml {
 		return true;
 	}
 
-	template<typename InputType>
+	template <typename InputType>
 	BaseGraphImpl<InputType>::~BaseGraphImpl() {
 
 	}
 
-	template<typename InputType>
+	template <typename InputType>
 	void BaseGraphImpl<InputType>::OnStyleSheetChange() {
 		Element::OnStyleSheetChange();
 		DirtyCanvas();
 	}
 
-	template<typename InputType>
+	template <typename InputType>
 	void BaseGraphImpl<InputType>::OnAttributeChange(const ElementAttributes &changed_attributes) {
 		Element::OnAttributeChange(changed_attributes);
 		DirtyCanvas();
 	}
 
-	template<typename InputType>
+	template <typename InputType>
 	void BaseGraphImpl<InputType>::OnPropertyChange(const PropertyIdSet &changed_properties) {
 		//todo: don't generate, just dirty
 		geometry_dirty = true;
@@ -310,14 +310,14 @@ namespace Rml {
 		DirtyCanvas();
 	}
 
-	template<typename InputType>
+	template <typename InputType>
 	Vector2f BaseGraphImpl<InputType>::GetCanvasSize() {
 		auto parent = GetParentNode();
 		Vector2f quad_size = parent->GetBox().GetSize(Box::CONTENT).Round();
 		return quad_size;
 	}
 
-	template<typename InputType>
+	template <typename InputType>
 	float BaseGraphImpl<InputType>::GetWidth() {
 		const ComputedValues &computed = GetComputedValues();
 		float width = 2;
@@ -328,23 +328,20 @@ namespace Rml {
 		return width;
 	}
 
-	template<typename InputType>
+	template <typename InputType>
 	void BaseGraphImpl<InputType>::DirtyCanvas() {
 		reset_all = true;
 	}
 
-	template<typename InputType>
+	template <typename InputType>
 	void BaseGraphImpl<InputType>::GenerateGeometryInit() {
 
 	}
 
-	template<typename InputType>
-	void BaseGraphImpl<InputType>::GenerateGeometryStart(const InputType &RMLUI_UNUSED_PARAMETER(from)) {
-		RMLUI_UNUSED(from);
+	template <typename InputType>
+	void BaseGraphImpl<InputType>::GenerateGeometryStart(const InputType & /*from*/) {}
 
-	}
-
-	template<typename InputType>
+	template <typename InputType>
 	double BaseGraphImpl<InputType>::GetInterval() {
 		auto res = feed->GetInterval();
 		if(res)

@@ -56,8 +56,7 @@ namespace Rml {
 		}
 
 	protected:
-		virtual DataType GetFrom(Rml::DataVariable RMLUI_UNUSED_PARAMETER(var)) {
-			RMLUI_UNUSED(var);
+		virtual DataType GetFrom(Rml::DataVariable /*var*/) {
 			return DataType();
 		};
 	};

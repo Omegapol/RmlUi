@@ -23,9 +23,7 @@ namespace Rml {
 
 		private:
 
-			virtual void *get_raw(void *RMLUI_UNUSED_PARAMETER(raw_feed), DataFeedAggArguments RMLUI_UNUSED_PARAMETER(args)) {
-				RMLUI_UNUSED(args);
-				RMLUI_UNUSED(raw_feed);
+			virtual void *get_raw(void * /*raw_feed*/, DataFeedAggArguments /*args*/) {
 				return nullptr;
 			};
 

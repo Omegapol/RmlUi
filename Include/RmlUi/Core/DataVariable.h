@@ -146,37 +146,11 @@ private:
 
 class RMLUICORE_API StructDefinition final : public VariableDefinition {
 public:
-	StructDefinition() : VariableDefinition(DataVariableType::Struct)
-	{}
+	StructDefinition();
 
-	DataVariable Child(DataPointer ptr, const DataAddressEntry& address) override
-	{
-		const String& name = address.name;
-		if (name.empty())
-		{
-			Log::Message(Log::LT_WARNING, "Expected a struct member name but none given.");
-			return DataVariable();
-		}
+	DataVariable Child(DataPointer ptr, const DataAddressEntry& address) override;
 
-		auto it = members.find(name);
-		if (it == members.end())
-		{
-			Log::Message(Log::LT_WARNING, "Member %s not found in data struct.", name.c_str());
-			return DataVariable();
-		}
-
-		VariableDefinition* next_definition = it->second.get();
-
-		return DataVariable(next_definition, ptr);
-	}
-
-	void AddMember(const String& name, UniquePtr<VariableDefinition> member)
-	{
-		RMLUI_ASSERT(member);
-		bool inserted = members.emplace(name, std::move(member)).second;
-		RMLUI_ASSERTMSG(inserted, "Member name already exists.");
-		(void)inserted;
-	}
+	void AddMember(const String& name, UniquePtr<VariableDefinition> member);
 
 private:
 	SmallUnorderedMap<String, UniquePtr<VariableDefinition>> members;

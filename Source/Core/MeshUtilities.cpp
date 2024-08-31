@@ -191,4 +191,51 @@ void MeshUtilities::GenerateBackground(Mesh& out_mesh, const Box& box, Vector2f 
 	geometry.DrawBackground(metrics, color);
 }
 
+
+// Generates a quad from a position, size, colour and texture coordinates.
+void MeshUtilities::GenerateLineGraph(Vertex* vertices, int* indices, Vector2f origin, Vector2f target, ColourbPremultiplied colour, float width,
+									 Vector2f top_left_texcoord, Vector2f bottom_right_texcoord, Vector2f scale, int index_offset, Vector2f offset)
+{
+	Vector3f delta = Vector3f(target.x, target.y, 0) - Vector3f(origin.x, origin.y, 0);
+	Vector2f delta2d = {delta.x, delta.y};
+
+	origin.x /= scale.x;
+	delta2d.x /= scale.x;
+	origin.y /= scale.y;
+	delta2d.y /= scale.y;
+
+	origin += offset;
+	target += offset;
+
+	//	Vector3f up = {0, 0, 1};
+	//	Vector3f perpendicular = crossProduct(delta, up);
+	//	perpendicular = perpendicular.Normalise() * (width / 2);
+	//	Vector2f p = {perpendicular.x, perpendicular.y};
+	Vector2f p = getPerpendicularDir(delta2d) * (width / 2);
+
+	vertices[0].position = origin - p;
+	vertices[0].colour = colour;
+	vertices[0].tex_coord = top_left_texcoord;
+
+	vertices[1].position = origin + p;
+	vertices[1].colour = colour;
+	vertices[1].tex_coord = Vector2f(bottom_right_texcoord.x, top_left_texcoord.y);
+
+	vertices[2].position = origin + delta2d + p;
+	vertices[2].colour = colour;
+	vertices[2].tex_coord = bottom_right_texcoord;
+
+	vertices[3].position = origin + delta2d - p;
+	vertices[3].colour = colour;
+	vertices[3].tex_coord = Vector2f(top_left_texcoord.x, bottom_right_texcoord.y);
+
+	indices[0] = index_offset + 0;
+	indices[1] = index_offset + 3;
+	indices[2] = index_offset + 1;
+
+	indices[3] = index_offset + 1;
+	indices[4] = index_offset + 3;
+	indices[5] = index_offset + 2;
+}
+
 } // namespace Rml

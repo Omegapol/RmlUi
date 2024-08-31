@@ -15,8 +15,7 @@ namespace Rml {
 			friend void *
 			MakeFeedImpl(DataVariable var, FamilyId target_id, const String &transform_str, DataFeedAggArguments args);
 
-			virtual void *get_raw(DataVariable RMLUI_UNUSED_PARAMETER(data)) {
-				RMLUI_UNUSED(data);
+			virtual void *get_raw(DataVariable /*data*/) {
 				return nullptr;
 			};
 
