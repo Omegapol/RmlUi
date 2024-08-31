@@ -81,6 +81,9 @@ public:
 		return static_cast<T>(cptr);
 	}
 
+	operator bool() const {
+		return ptr != nullptr || cptr != nullptr;
+	}
 private:
 	void* ptr = nullptr;
 	const void* cptr = nullptr;
