@@ -43,7 +43,6 @@
 
 
 Rml::Context* context = nullptr;
-ShellRenderInterfaceOpenGL* shell_renderer = nullptr;
 TestNavigator* g_navigator = nullptr;
 
 double global_time = 0.0f;
@@ -65,9 +64,10 @@ void GameLoop()
 
 	context->Update();
 
-	shell_renderer->PrepareRenderBuffer();
+	// auto shell_renderer = Rml::GetRenderInterface();
+	// shell_renderer->PrepareRenderBuffer();
 	context->Render();
-	shell_renderer->PresentRenderBuffer();
+	// shell_renderer->PresentRenderBuffer();
 
 	if (g_navigator)
 	{
@@ -78,8 +78,9 @@ void GameLoop()
 
 #if defined RMLUI_PLATFORM_WIN32
 	#include <RmlUi_Include_Windows.h>
-	#include <Core/DataModel.h>
-	#include <Core/Elements/ElementGraph/DataFeed.h>
+	#include <RmlUi/Core/ElementDocument.h>
+	#include <../../RmlUi/Source/Core/DataModel.h>
+	#include <../../RmlUi/SOurce/Core/Elements/ElementGraph/DataFeed.h>
 int APIENTRY WinMain(HINSTANCE /*instance_handle*/, HINSTANCE /*previous_instance_handle*/, char* win_command_line, int /*command_show*/)
 #else
 int main(int argc, char** argv)
@@ -260,6 +261,16 @@ int main(int argc, char** argv)
 		bool running = true;
 		while (running)
 		{
+			auto delta = Rml::GetSystemInterface()->GetElapsedTime() - global_time;
+			global_time = Rml::GetSystemInterface()->GetElapsedTime();
+			acc_time += delta;
+			while(acc_time > 0.5) {
+				updated_vec.push_back({(float) global_time, (float) global_time / 2.f});
+				acc_time -= 0.5;
+				auto model = Rml::GetContext(0)->GetDataModel("data").GetModelHandle();
+				model.DirtyVariable("updated_vec");
+			}
+
 			running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts);
 
 			context->Update();

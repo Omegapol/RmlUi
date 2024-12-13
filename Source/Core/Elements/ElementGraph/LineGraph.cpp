@@ -3,25 +3,25 @@
 //
 
 #include "LineGraph.h"
-#include "../../../Include/RmlUi/Core/GeometryUtilities.h"
+#include "RmlUi/Core/MeshUtilities.h"
 
 
 Rml::GraphRenderMetadata
 Rml::LineGraph::GenerateGeometryPart(Rml::Vertex *vertices, int *indices,
 									 const Rml::Vector2<float> &next, int index_offset, Rml::Colourb colour,
 									 Rml::Vector2f offset, Rml::Vector2f scale, double width) {
-	Rml::GraphRenderMetadata res;
+	GraphRenderMetadata res;
 	if(current_set) {
 		auto secondary_colour = colour;
 		secondary_colour.alpha /= 4;
-		GeometryUtilities::GenerateLineGraph(vertices + 4, indices + 6,
-											 current, next, secondary_colour,
+		MeshUtilities::GenerateLineGraph(vertices + 4, indices + 6,
+											 current, next, secondary_colour.ToPremultiplied(),
 											 (float) width + 1.f,
 											 Vector2f{}, Vector2f{},
 											 scale,
 											 index_offset + 4, offset);
-		GeometryUtilities::GenerateLineGraph(vertices, indices,
-											 current, next, colour,
+		MeshUtilities::GenerateLineGraph(vertices, indices,
+											 current, next, colour.ToPremultiplied(),
 											 (float) width,
 											 Vector2f{}, Vector2f{},
 											 scale,
@@ -51,8 +51,8 @@ Rml::GraphRenderMetadata Rml::LineGraph::GetMetadata(unsigned int input_size) {
 bool Rml::LineGraph::IsPointWithinElement(Rml::Vector2f point) {
 	auto parent = GetParentNode();
 
-	auto transl = parent->GetAbsoluteOffset(Box::CONTENT).Round();
-	Vector2f quad_size = parent->GetBox().GetSize(Box::CONTENT).Round();
+	auto transl = parent->GetAbsoluteOffset(BoxArea::Content).Round();
+	Vector2f quad_size = parent->GetBox().GetSize(BoxArea::Content).Round();
 	if (point.x > transl.x && point.x < transl.x + quad_size.x &&
 		point.y > transl.y && point.y < transl.y + quad_size.y) {
 		auto view_point = ScreenPointToView(point, transl);

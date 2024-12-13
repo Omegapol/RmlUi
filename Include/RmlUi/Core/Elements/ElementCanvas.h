@@ -29,11 +29,10 @@
 #ifndef RMLUI_CORE_ELEMENTS_ELEMENTCANVAS_H
 #define RMLUI_CORE_ELEMENTS_ELEMENTCANVAS_H
 
-#include "../../Include/RmlUi/Core/Header.h"
-#include "../../Include/RmlUi/Core/Element.h"
-#include "../../Include/RmlUi/Core/Geometry.h"
-#include "../../Include/RmlUi/Core/Texture.h"
-#include "../../Include/RmlUi/Core/Spritesheet.h"
+#include "RmlUi/Core/Header.h"
+#include "RmlUi/Core/Element.h"
+#include "RmlUi/Core/Geometry.h"
+#include "RmlUi/Core/Texture.h"
 #include "ElementCanvasDrawable.h"
 
 namespace Rml {

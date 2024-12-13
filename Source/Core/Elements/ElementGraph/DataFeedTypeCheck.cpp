@@ -18,8 +18,7 @@ namespace Rml {
 			return MakeUnique<DataFeed<Output>>(data, std::move(MakeUnique<TypeCheckerChildrenImpl<Output>>(this->children)));
 		}
 
-		Output get_sub(DataVariable RMLUI_UNUSED_PARAMETER(data)) override {
-			RMLUI_UNUSED(data);
+		Output get_sub(DataVariable /*data*/) override {
 			// for built in types there is no need for actual implementation here
 			return Output();
 		}

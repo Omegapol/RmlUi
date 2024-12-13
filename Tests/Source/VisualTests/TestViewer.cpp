@@ -232,6 +232,7 @@ bool TestViewer::LoadTest(const Rml::String& directory, const Rml::String& filen
 			return false;
 
 		document_test->Show(ModalFlag::None, FocusFlag::None);
+		document_test->SetOffset({100, 100}, nullptr);
 		if (keep_scroll_position)
 			document_test->SetScrollTop(scroll_position);
 

@@ -47,4 +47,10 @@ target_sources(rmlui_core PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/XMLNodeHandlerTabSet.h"
 	"${CMAKE_CURRENT_SOURCE_DIR}/XMLNodeHandlerTextArea.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/XMLNodeHandlerTextArea.h"
+	"${CMAKE_CURRENT_SOURCE_DIR}/ElementCanvas.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/ElementCanvasDrawable.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/GraphFormatters.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/common.cpp"
 )
+
+add_subdirectory("ElementGraph")

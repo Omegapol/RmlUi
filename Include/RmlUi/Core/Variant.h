@@ -111,7 +111,11 @@ public:
 	bool GetInto(T& value) const;
 
 	/// Enum overload for the data accessor, will convert any stored integral value to the requested enum type.
-	template <typename T, typename std::enable_if_t<std::is_enum<T>::value, int> = 0>
+	template <typename T, typename std::enable_if<std::is_enum<T>::value && !std::is_const<T>::value, int>::type = 0>
+	bool GetInto(T& value) const;
+
+	/// Enum overload for the data accessor, will convert any stored integral value to the requested enum type.
+	template <typename T, typename std::enable_if<std::is_enum<T>::value && std::is_const<T>::value, int>::type = 0>
 	bool GetInto(T& value) const;
 
 	/// Returns a reference to the variant's underlying type.

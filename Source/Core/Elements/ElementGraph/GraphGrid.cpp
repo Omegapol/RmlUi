@@ -7,10 +7,13 @@
 void Rml::GraphGrid::GenerateGeometry(Rml::Vector2f canvasSize) {
 
 	// Release the old geometry before specifying the new vertices.
-	geometry.Release(true);
+	geometry.Release(Geometry::ReleaseMode::ClearMesh);
 
-	Vector<Vertex> &vertices = geometry.GetVertices();
-	Vector<int> &indices = geometry.GetIndices();
+	auto man = this->GetRenderManager();
+	auto mesh = Mesh();
+
+	Vector <Vertex> &vertices = mesh.vertices;
+	Vector<int> &indices = mesh.indices;
 
 	auto l_view = view.x;
 	auto view_width = (l_view.y - l_view.x);
@@ -32,14 +35,15 @@ void Rml::GraphGrid::GenerateGeometry(Rml::Vector2f canvasSize) {
 
 	//todo: width computation duplicated
 	auto width = 2.f;
-	auto computed_width = computed.width;
+	auto computed_width = computed.width();
 	if(computed_width.type == Style::Width::Length && computed_width.value != 0)
 	{
 		width = computed_width.value;
 	}
 
-	Colourb colour = computed.color;
-	colour.alpha = (byte) (computed.opacity * (float) colour.alpha);
+	Colourb colour = computed.color();
+	ColourbPremultiplied colour_premultiplied = ColourbPremultiplied(colour.red, colour.green, colour.red, (computed.opacity() * (float) colour.alpha));
+	colour.alpha = (byte) (computed.opacity() * (float) colour.alpha);
 	auto scale = Vector2f{view_width / canvasSize.x, -1.0f};
 	scale = GetRatios(canvasSize);
 
@@ -52,14 +56,15 @@ void Rml::GraphGrid::GenerateGeometry(Rml::Vector2f canvasSize) {
 		Vector2f v1 = {d / scale.x + offset2.x, 0};
 		Vector2f v2 = {d  / scale.x + offset2.x, canvasSize.y};
 
-		GeometryUtilities::GenerateLineGraph(&vertices[0] + idx*4, &indices[0] + idx*6,
+		MeshUtilities::GenerateLineGraph(&vertices[0] + idx*4, &indices[0] + idx*6,
 											 v1,
 											 v2,
-											 colour,
+											 colour_premultiplied,
 											 (float) width,
 											 Vector2f{}, Vector2f{},
 											 {1.0f, 1.0f},
-											 idx*4);
+											 idx*4,
+											 {});
 		idx += 1;
 	}
 
@@ -69,16 +74,18 @@ void Rml::GraphGrid::GenerateGeometry(Rml::Vector2f canvasSize) {
 		Vector2f v1 = {0, d / scale.y + offset2.y};
 		Vector2f v2 = {canvasSize.x, d / scale.y + offset2.y};
 
-		GeometryUtilities::GenerateLineGraph(&vertices[0] + idx*4, &indices[0] + idx*6,
+		MeshUtilities::GenerateLineGraph(&vertices[0] + idx*4, &indices[0] + idx*6,
 											 v1,
 											 v2,
-											 colour,
+											 colour_premultiplied,
 											 (float) width,
 											 Vector2f{}, Vector2f{},
 											 {1.0f, 1.0f},
-											 idx*4);
+											 idx*4,
+											 {});
 		idx += 1;
 	}
+	geometry = man->MakeGeometry(std::move(mesh));
 //	Log::Message(Log::LT_DEBUG, "Size: %d Actual: %d", size, idx);
 }
 

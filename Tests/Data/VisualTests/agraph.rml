@@ -54,17 +54,20 @@ area:hover {
 	width: 2px;
 }
 scale {
-	color: #ffffF0;
+<!--	color: #ffffF0;-->
+	color: #ff0000;
+	font-size: 20px;
+	font-weight: bold;
 }
 grid {
 	color: #ffffFf;
 	opacity: 0.2;
-	width: 3.8px;
+	width: 1px;
 }
 grid.background {
 	color: #ffffFf;
 	opacity: 0.1;
-	width: 1.9px;
+	width: 1px;
 }
 
 div {
@@ -80,17 +83,17 @@ div {
 	<graph view-x-lock="0," zoom-min="50" zoom-max="240" view-x="-100,100" view-y="-100,100" height="300" width="300">
 		<grid interval="auto" />
 		<grid class="background" interval="auto"/>
-<!--		<line class="line1" data-source="vec"/>-->
+		<line class="line1" data-source="vec"/>
 <!--		<line class="line2" data-source="vec3" transform="sum(x)"/>-->
 <!--		<line data-source="vec2"/>-->
 <!--		<line class="line3" static="10,10 90,50 120,60 140,55"/>-->
-<!--		<candles class="line3" data-source="updated_vec"-->
-<!--			  transform="candle_s(x)" transf-step="20"/>-->
+		<candles class="line3" data-source="updated_vec"
+			  transform="candle_s(x)" transf-step="20"/>
 		<line class="line3" data-source="updated_vec"/>
 		<scale right-margin="0.1" horizontal="false" interval="auto"/>
 
-<!--		<scale horizontal="true" interval="auto" format="%.0fh"/>-->
-		<scale horizontal="true" interval="auto"/>
+		<scale horizontal="true" interval="auto" format="%.0fh"/>
+<!--		<scale horizontal="true" interval="auto"/>-->
 	</graph>
 
 
@@ -106,13 +109,13 @@ div {
 <!--		<scale horizontal="false" interval="25"/>-->
 <!--		<scale horizontal="true" interval="50"/>-->
 <!--	</graph>-->
-<!--	<graph view-x="0,100" view-y="-50,150" height="300" width="300">-->
-<!--		<grid interval="50" />-->
-<!--		<grid class="background" interval="25" />-->
-<!--		<area class="line1" data-source="vec"/>-->
-<!--		<scale horizontal="false" interval="25"/>-->
-<!--		<scale horizontal="true" interval="50"/>-->
-<!--	</graph>-->
+	<graph view-x="0,100" view-y="-50,150" height="300" width="300">
+		<grid interval="50" />
+		<grid class="background" interval="25" />
+		<area class="line1" data-source="vec"/>
+		<scale horizontal="false" interval="25"/>
+		<scale horizontal="true" interval="50"/>
+	</graph>
 </div>
 </body>
 </rml>

@@ -26,6 +26,7 @@
  *
  */
 
+#define RMLUI_UNITTESTS_ENABLED
 
 #include "../Common/TestsInterface.h"
 
@@ -33,7 +34,7 @@
 #include <RmlUi/Core/DataModelHandle.h>
 #include <RmlUi/Core/Element.h>
 #include <RmlUi/Core/ElementDocument.h>
-#include <Core/DataModel.h>
+#include <../../RmlUi/Source/Core/DataModel.h>
 #include <cmath>
 #include <doctest.h>
 
@@ -758,7 +759,7 @@ TEST_CASE("data_binding")
 	ElementDocument* document = context->LoadDocumentFromMemory(document_rml);
 	REQUIRE(document);
 	document->Show();
-	auto g = Guard(document);
+	// auto g = Guard(document);
 
 	TestsShell::RenderLoop();
 

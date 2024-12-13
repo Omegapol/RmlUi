@@ -33,8 +33,7 @@
 namespace Rml {
 
 // Constructs a new ElementCanvas.
-	ElementCanvas::ElementCanvas(const String &tag) : Element(tag), dimensions(-1, -1), rect_source(RectSource::None),
-													  geometry(this) {
+	ElementCanvas::ElementCanvas(const String &tag) : Element(tag), dimensions(-1, -1), rect_source(RectSource::None) {
 		dimensions_scale = 1.0f;
 		geometry_dirty = false;
 		texture_dirty = true;
@@ -68,17 +67,17 @@ namespace Rml {
 		if (HasAttribute("width"))
 			dimensions.x = GetAttribute<float>("width", -1);
 		else if (rect_source == RectSource::None)
-			dimensions.x = (float) texture.GetDimensions(GetRenderInterface()).x;
+			dimensions.x = (float) texture.GetDimensions().x;
 		else
-			dimensions.x = rect.width;
+			dimensions.x = rect.Width();
 
 		// Calculate the y dimension.
 		if (HasAttribute("height"))
 			dimensions.y = GetAttribute<float>("height", -1);
 		else if (rect_source == RectSource::None)
-			dimensions.y = (float) texture.GetDimensions(GetRenderInterface()).y;
+			dimensions.y = (float) texture.GetDimensions().y;
 		else
-			dimensions.y = rect.height;
+			dimensions.y = rect.Height();
 
 		dimensions *= dimensions_scale;
 
@@ -92,27 +91,16 @@ namespace Rml {
 
 // Renders the element.
 	void ElementCanvas::OnRender() {
-		auto transl = GetAbsoluteOffset(Box::CONTENT).Round();
-		Vector2f quad_size = GetBox().GetSize(Box::CONTENT).Round();
+		auto transl = GetAbsoluteOffset(BoxArea::Content).Round();
+		Vector2f quad_size = GetBox().GetSize(BoxArea::Content).Round();
 
 		if (geometry_dirty)
 			GenerateGeometry();
 
 		GetRenderInterface()->EnableScissorRegion(true);
-		Vector2i clip_origin, clip_dimensions;
-		Vector2i old_clip_origin, old_clip_dimensions;
-		GetContext()->GetActiveClipRegion(old_clip_origin, old_clip_dimensions);
-		ElementUtilities::GetClippingRegion(clip_origin, clip_dimensions, this);
-		auto &A = clip_origin;
-		auto &F = transl;
-		auto H = transl + quad_size;
-		auto C = clip_origin + clip_dimensions;
-		Vector2i K, L;
-		K.x = std::max(std::min((int) H.x, C.x), A.x);
-		L.x = std::max(std::min((int) F.x, C.x), A.x);
-		K.y = std::max(std::min((int) H.y, C.y), A.y);
-		L.y = std::max(std::min((int) F.y, C.y), A.y);
-		GetRenderInterface()->SetScissorRegion(L.x, L.y, K.x - L.x, K.y - L.y);
+		Rectanglei clip_rect;
+		ElementUtilities::GetClippingRegion(this, clip_rect, {}, true);
+		GetRenderInterface()->SetScissorRegion(clip_rect);
 
 		for (auto i = 0; i < GetNumChildren(true); ++i) {
 			auto child = GetChild(i);
@@ -121,8 +109,6 @@ namespace Rml {
 				ptr->RenderOnCanvas(quad_size, transl);
 			}
 		}
-		GetRenderInterface()->SetScissorRegion(old_clip_origin.x, old_clip_origin.y, old_clip_dimensions.x,
-											   old_clip_dimensions.y);
 	}
 
 // Called when attributes on the element are changed.
@@ -237,7 +223,7 @@ namespace Rml {
 			Vector2f v;
 			auto changed = ParseViewStr(startview->second.Get<String>(), v);
 			if (!HasAttribute("static-view") && changed) {
-				Vector2f quad_size = GetBox().GetSize(Box::CONTENT).Round();
+				Vector2f quad_size = GetBox().GetSize(BoxArea::Content).Round();
 				geometry_dirty = true;
 				view = {v, {0, quad_size.y}};
 			}
@@ -281,7 +267,7 @@ namespace Rml {
 	}
 
 	void ElementCanvas::GenerateGeometry() {
-		Vector2f quad_size = GetBox().GetSize(Box::CONTENT).Round();
+		Vector2f quad_size = GetBox().GetSize(BoxArea::Content).Round();
 
 		for (auto i = 0; i < GetNumChildren(true); ++i) {
 			auto child = GetChild(i);
@@ -300,6 +286,7 @@ namespace Rml {
 		geometry_dirty = true;
 		dimensions_scale = 1.0f;
 
+		auto man = this->GetRenderManager();
 		const float dp_ratio = ElementUtilities::GetDensityIndependentPixelRatio(this);
 
 		// Check for a sprite first, this takes precedence.
@@ -313,7 +300,7 @@ namespace Rml {
 					if (const Sprite *sprite = style_sheet->GetSprite(sprite_name)) {
 						rect = sprite->rectangle;
 						rect_source = RectSource::Sprite;
-						texture = sprite->sprite_sheet->texture;
+						texture = sprite->sprite_sheet->texture_source.GetTexture(*man);
 						dimensions_scale = sprite->sprite_sheet->display_scale * dp_ratio;
 						valid_sprite = true;
 					}
@@ -342,13 +329,9 @@ namespace Rml {
 			if (ElementDocument * document = GetOwnerDocument())
 				source_url.SetURL(document->GetSourceURL());
 
-			texture.Set(source_name, source_url.GetPath());
-
+			texture = man->LoadTexture(source_name, source_url.GetPath());
 			dimensions_scale = dp_ratio;
 		}
-
-		// Set the texture onto our geometry object.
-		geometry.SetTexture(&texture);
 
 		return true;
 	}
@@ -367,10 +350,9 @@ namespace Rml {
 								 "Element '%s' has an invalid 'rect' attribute; rect requires 4 space-separated values, found %zu.",
 								 GetAddress().c_str(), coords_list.size());
 				} else {
-					rect.x = (float) std::atof(coords_list[0].c_str());
-					rect.y = (float) std::atof(coords_list[1].c_str());
-					rect.width = (float) std::atof(coords_list[2].c_str());
-					rect.height = (float) std::atof(coords_list[3].c_str());
+					rect.p0 = {static_cast<float>(std::atof(coords_list[0].c_str())), static_cast<float>(std::atof(coords_list[1].c_str()))};
+					rect.p1 = {static_cast<float>(rect.p0.x + std::atof(coords_list[2].c_str())),
+						static_cast<float>(rect.p0.y + std::atof(coords_list[3].c_str()))};
 
 					// We have new, valid coordinates; force the geometry to be regenerated.
 					valid_rect = true;
@@ -417,7 +399,7 @@ namespace Rml {
 		}
 		if (event.GetId() == EventId::Mousescroll) {
 			auto params = event.GetParameters();
-			auto delta = params["wheel_delta"].Get<float>() * 5;
+			auto delta = params["wheel_delta_y"].Get<float>() * 5;
 			Zoom(delta);
 
 			geometry_dirty = true;
@@ -447,8 +429,8 @@ namespace Rml {
 	}
 
 	Vector2f ElementCanvas::ScreenToView(const Vector2f &screen_pos) {
-		auto transl = GetAbsoluteOffset(Box::CONTENT).Round();
-		Vector2f quad_size = GetBox().GetSize(Box::CONTENT).Round();
+		auto transl = GetAbsoluteOffset(BoxArea::Content).Round();
+		Vector2f quad_size = GetBox().GetSize(BoxArea::Content).Round();
 
 		const auto &view_size_x = view.x.y - view.x.x;
 		const auto &view_size_y = view.y.y - view.y.x;
@@ -459,8 +441,8 @@ namespace Rml {
 
 	Vector2f ElementCanvas::ViewToScreen(const Vector2f &view_pos) {
 		//todo: test this
-		auto transl = GetAbsoluteOffset(Box::CONTENT).Round();
-		Vector2f quad_size = GetBox().GetSize(Box::CONTENT).Round();
+		auto transl = GetAbsoluteOffset(BoxArea::Content).Round();
+		Vector2f quad_size = GetBox().GetSize(BoxArea::Content).Round();
 
 		const auto &view_size_x = view.x.y - view.x.x;
 		const auto &view_size_y = view.y.y - view.y.x;

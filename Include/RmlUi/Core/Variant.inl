@@ -83,7 +83,7 @@ bool Variant::GetInto(T& value) const
 	return false;
 }
 
-template <typename T, typename std::enable_if<std::is_enum<T>::value, int>::type>
+template <typename T, typename std::enable_if<std::is_enum<T>::value && !std::is_const<T>::value, int>::type>
 bool Variant::GetInto(T& value) const
 {
 	static_assert(sizeof(T) <= sizeof(int64_t), "Enum underlying type exceeds maximum supported integer type size");
@@ -93,6 +93,12 @@ bool Variant::GetInto(T& value) const
 		value = static_cast<T>(stored_value);
 		return true;
 	}
+	return false;
+}
+
+template <typename T, typename std::enable_if<std::is_enum<T>::value && std::is_const<T>::value, int>::type>
+bool Variant::GetInto(T& value) const
+{
 	return false;
 }
 

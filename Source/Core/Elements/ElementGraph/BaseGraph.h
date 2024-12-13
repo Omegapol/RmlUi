@@ -5,12 +5,12 @@
 #ifndef RMLUI_BASEGRAPH_H
 #define RMLUI_BASEGRAPH_H
 
-#include "../../../../Include/RmlUi/Core/Geometry.h"
-#include "../../../../Include/RmlUi/Core/ComputedValues.h"
+#include "RmlUi/Core/Geometry.h"
+#include "RmlUi/Core/ComputedValues.h"
 #include "RmlUi/Core/Elements/DataFeedBase.h"
 #include "DataFeedTransforms.h"
-#include "../../../../Include/RmlUi/Core/Elements/ElementCanvasDrawable.h"
-#include "../../../../Include/RmlUi/Core/Elements/ElementDataSink.h"
+#include "RmlUi/Core/Elements/ElementCanvasDrawable.h"
+#include "RmlUi/Core/Elements/ElementDataSink.h"
 #include "../common.h"
 
 
@@ -134,8 +134,8 @@ namespace Rml {
 		const ComputedValues &computed = GetComputedValues();
 		float width = this->GetWidth();
 
-		float opacity = computed.opacity;
-		Colourb quad_colour = computed.color;
+		float opacity = computed.opacity();
+		Colourb quad_colour = computed.color();
 		quad_colour.alpha = (byte) (opacity * (float) quad_colour.alpha);
 
 		this->GenerateGeometryInit();
@@ -172,12 +172,13 @@ namespace Rml {
 			if (prev_found)
 				GenerateGeometryStart(prev);
 
-			Geometry &geometry = *(cache.geometry);
+			auto man = this->GetRenderManager();
+			auto mesh = Mesh();
+
+			Vector <Vertex> &vertices = mesh.vertices;
+			Vector<int> &indices = mesh.indices;
 
 			// Release the old geometry before specifying the new vertices.
-			geometry.Release(true);
-			Vector<Vertex> &vertices = geometry.GetVertices();
-			Vector<int> &indices = geometry.GetIndices();
 			GraphRenderMetadata meta = GetMetadata(vec.size());
 
 			// generate only if there is anything to be parsed
@@ -203,6 +204,7 @@ namespace Rml {
 			this->data[v->base] = cache;
 
 			prev_found = false;
+			*cache.geometry = man->MakeGeometry(std::move(mesh));
 		}
 		reset_all = false;
 		geometry_dirty = false;
@@ -313,7 +315,7 @@ namespace Rml {
 	template <typename InputType>
 	Vector2f BaseGraphImpl<InputType>::GetCanvasSize() {
 		auto parent = GetParentNode();
-		Vector2f quad_size = parent->GetBox().GetSize(Box::CONTENT).Round();
+		Vector2f quad_size = parent->GetBox().GetSize(BoxArea::Content).Round();
 		return quad_size;
 	}
 
@@ -321,7 +323,7 @@ namespace Rml {
 	float BaseGraphImpl<InputType>::GetWidth() {
 		const ComputedValues &computed = GetComputedValues();
 		float width = 2;
-		auto computed_width = computed.width;
+		auto computed_width = computed.width();
 		if (computed_width.type == Style::Width::Length && computed_width.value != 0) {
 			width = computed_width.value;
 		}

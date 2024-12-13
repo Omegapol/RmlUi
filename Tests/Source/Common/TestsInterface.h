@@ -55,6 +55,7 @@ public:
 	// Checks and clears previously logged messages, then sets the number of expected
 	// warnings and errors until the next call.
 	void SetNumExpectedWarnings(int num_expected_warnings);
+	void SetNumExpectedErrors(int num);
 
 	void SetTime(double t);
 
@@ -62,7 +63,9 @@ private:
 	double elapsed_time = 0.0;
 
 	int num_logged_warnings = 0;
+	int num_logged_errors = 0;
 	int num_expected_warnings = 0;
+	int num_expected_errors = 0;
 
 	Rml::StringList warnings;
 };

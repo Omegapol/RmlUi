@@ -119,9 +119,7 @@ namespace Rml {
 			res.high = std::max(res.high, cur.y);
 		}
 
-		static void Finish(CandleStickData &res, const Vector2f& RMLUI_UNUSED_PARAMETER(prev),  const Vector2f& first,  const Vector2f& end, int RMLUI_UNUSED_PARAMETER(count)) {
-			RMLUI_UNUSED(prev);
-			RMLUI_UNUSED(count);
+		static void Finish(CandleStickData &res, const Vector2f& /*prev*/,  const Vector2f& first,  const Vector2f& end, int /*count*/) {
 			res.entry = first.y;
 			res.exit = end.y;
 		}

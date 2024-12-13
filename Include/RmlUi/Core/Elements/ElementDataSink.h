@@ -5,6 +5,7 @@
 #ifndef RMLUI_ELEMENTDATASINK_H
 #define RMLUI_ELEMENTDATASINK_H
 
+#include <RmlUi/Core/DataVariable.h>
 
 namespace Rml {
 	class ElementDataSink {

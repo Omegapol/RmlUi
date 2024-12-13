@@ -95,7 +95,6 @@ public:
 	/// @return True if a clipping region exists for the element and clip_origin and clip_window were set, false if not.
 	static bool GetClippingRegion(Element* element, Rectanglei& clip_region, ClipMaskGeometryList* clip_mask_list = nullptr,
 		bool force_clip_self = false);
-	static bool GetClippingRegionDirect(Vector2i& clip_origin, Vector2i& clip_dimensions, int num_ignored_clips, Element* element);
 
 	/// Sets the clipping region from an element and its ancestors.
 	/// @param[in] element The element to generate the clipping region from.

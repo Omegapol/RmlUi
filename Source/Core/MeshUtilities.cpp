@@ -191,6 +191,34 @@ void MeshUtilities::GenerateBackground(Mesh& out_mesh, const Box& box, Vector2f 
 	geometry.DrawBackground(metrics, color);
 }
 
+void MeshUtilities::GenerateTriangle(Vertex* vertices, int* indices, Vector2f points[3], ColourbPremultiplied colour, Vector2f texcoords[3], int index_offset) {
+	vertices[0].position = points[0];
+	vertices[0].colour = colour;
+	vertices[0].tex_coord = texcoords[0];
+
+	vertices[1].position = points[1];
+	vertices[1].colour = colour;
+	vertices[1].tex_coord = texcoords[1];
+
+	vertices[2].position = points[2];
+	vertices[2].colour = colour;
+	vertices[2].tex_coord = texcoords[2];
+
+	indices[0] = index_offset + 0;
+	indices[1] = index_offset + 1;
+	indices[2] = index_offset + 2;
+}
+
+
+Vector2f getPerpendicular(Vector2f vec)
+{
+	return {vec.y, -vec.x};
+}
+
+Vector2f getPerpendicularDir(Vector2f vec)
+{
+	return getPerpendicular(vec).Normalise();
+}
 
 // Generates a quad from a position, size, colour and texture coordinates.
 void MeshUtilities::GenerateLineGraph(Vertex* vertices, int* indices, Vector2f origin, Vector2f target, ColourbPremultiplied colour, float width,

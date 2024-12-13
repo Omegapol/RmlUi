@@ -165,6 +165,7 @@ void TestsShell::ShutdownShell()
 	}
 
 	tests_system_interface.SetNumExpectedWarnings(0);
+	tests_system_interface.SetNumExpectedErrors(0);
 
 	Rml::Shutdown();
 
@@ -183,6 +184,11 @@ void TestsShell::ShutdownShell()
 void TestsShell::SetNumExpectedWarnings(int num_warnings)
 {
 	tests_system_interface.SetNumExpectedWarnings(num_warnings);
+}
+
+void TestsShell::SetNumExpectedErrors(int num_errors)
+{
+	tests_system_interface.SetNumExpectedErrors(num_errors);
 }
 
 Rml::String TestsShell::GetRenderStats()

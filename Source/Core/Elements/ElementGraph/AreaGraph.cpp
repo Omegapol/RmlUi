@@ -3,7 +3,7 @@
 //
 
 #include "AreaGraph.h"
-#include "../../../Include/RmlUi/Core/GeometryUtilities.h"
+#include "RmlUi/Core/GeometryUtilities.h"
 
 float FindYCrossing(const Rml::Vector2f &a, const Rml::Vector2f &b) {
 	auto delta_x = b.x - a.x;
@@ -16,8 +16,8 @@ float FindYCrossing(const Rml::Vector2f &a, const Rml::Vector2f &b) {
 bool Rml::AreaGraph::IsPointWithinElement(Rml::Vector2f point) {
 	auto parent = GetParentNode();
 
-	auto transl = parent->GetAbsoluteOffset(Box::CONTENT).Round();
-	Vector2f quad_size = parent->GetBox().GetSize(Box::CONTENT).Round();
+	auto transl = parent->GetAbsoluteOffset(BoxArea::Content).Round();
+	Vector2f quad_size = parent->GetBox().GetSize(BoxArea::Content).Round();
 	if (point.x > transl.x && point.x < transl.x + quad_size.x &&
 		point.y > transl.y && point.y < transl.y + quad_size.y) {
 		auto view_point = ScreenPointToView(point, transl);
@@ -56,22 +56,22 @@ Rml::GraphRenderMetadata Rml::AreaGraph::GenerateGeometryPart(Rml::Vertex *verti
 		Vector2f tex2[] = {{0.0f, 0.0f},
 						   {0.0f, 0.0f},
 						   {0.0f, 0.0f}};
-		GeometryUtilities::GenerateTriangle(vertices, indices,
-											pts, colour,
-											tex,
-											index_offset);
-		GeometryUtilities::GenerateTriangle(vertices + 3, indices + 3,
-											pts2, colour,
-											tex2,
-											index_offset + 3);
+		MeshUtilities::GenerateTriangle(vertices, indices,
+		 									pts, colour.ToPremultiplied(),
+		 									tex,
+		 									index_offset);
+		MeshUtilities::GenerateTriangle(vertices + 3, indices + 3,
+		 									pts2, colour.ToPremultiplied(),
+		 									tex2,
+		 									index_offset + 3);
 		auto secondary_colour = colour;
 		secondary_colour.alpha /= 4;
-		GeometryUtilities::GenerateLineGraph(vertices + 6, indices + 6,
-											 current, next, secondary_colour,
-											 (float) width + 1.5f,
-											 Vector2f{}, Vector2f{},
-											 scale,
-											 index_offset + 6, offset);
+		MeshUtilities::GenerateLineGraph(vertices + 6, indices + 6,
+										 current, next, secondary_colour.ToPremultiplied(),
+										 (float) width + 1.5f,
+										 Vector2f{}, Vector2f{},
+										 scale,
+										 index_offset + 6, offset);
 		res.vertices_delta = 10;
 		res.indices_delta = 12;
 	}

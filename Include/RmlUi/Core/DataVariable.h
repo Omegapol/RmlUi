@@ -90,7 +90,7 @@ private:
 
 // Literal data variable constructor
 RMLUICORE_API DataVariable MakeLiteralIntVariable(int value);
-
+// typename = std::enable_if_t<!std::is_same<Variant, std::decay_t<T>>::value
 template <typename T>
 class ScalarDefinition final : public VariableDefinition {
 public:

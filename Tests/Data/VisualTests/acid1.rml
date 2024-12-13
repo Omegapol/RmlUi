@@ -20,6 +20,11 @@ body {
 	bottom: auto;
 }
 
+body:hover {
+	width: 1000px;
+	color: FFF000;
+}
+
 dl {
 	margin: 0;
 	border: 0;

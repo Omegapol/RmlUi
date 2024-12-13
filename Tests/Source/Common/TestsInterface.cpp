@@ -53,8 +53,13 @@ bool TestsSystemInterface::LogMessage(Rml::Log::Type type, const Rml::String& me
 		s_type = Rml::Log::LT_ERROR;
 	const bool result = Rml::SystemInterface::LogMessage(s_type, message);
 
-	if(rml_throw_on_errors && type < Rml::Log::Type::LT_INFO)
-		throw TestException(message.c_str());
+	if(rml_throw_on_errors && type < Rml::Log::Type::LT_WARNING)
+	{
+		if(num_expected_errors <= num_logged_errors++)
+		{
+			throw TestException(message.c_str());
+		}
+	}
 	else {
 		if (type <= Rml::Log::Type::LT_WARNING) {
 			const Rml::String warning = "RmlUi " + Rml::String(message_type_str[type]) + ": " + message;
@@ -90,6 +95,26 @@ void TestsSystemInterface::SetNumExpectedWarnings(int in_num_expected_warnings)
 		warnings.clear();
 	}
 	num_expected_warnings = in_num_expected_warnings;
+}
+
+void TestsSystemInterface::SetNumExpectedErrors(int in_num_expected_errors)
+{
+	if (num_expected_errors > 0)
+	{
+		// Check and clear previous warnings
+		if (num_logged_errors != num_expected_errors)
+		{
+			Rml::String str = "Got unexpected number of errors: \n";
+			// Rml::StringUtilities::JoinString(str, errors, '\n');
+			// if (errors.empty())
+			// 	str += "(no warnings logged)";
+			CHECK_MESSAGE(num_logged_errors == num_expected_errors, str);
+		}
+
+		// errors.clear();
+	}
+	num_logged_errors = 0;
+	num_expected_errors = in_num_expected_errors;
 }
 
 void TestsSystemInterface::SetTime(double t)

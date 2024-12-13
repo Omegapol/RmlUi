@@ -88,6 +88,8 @@ public:
 	static void GenerateBackground(Mesh& mesh, const Box& box, Vector2f offset, Vector4f border_radius, ColourbPremultiplied colour,
 		BoxArea area = BoxArea::Padding);
 
+	static void GenerateTriangle(Vertex* vertices, int* indices, Vector2f points[3], ColourbPremultiplied colour, Vector2f texcoords[3], int index_offset);
+
 	static void GenerateLineGraph(Vertex* vertices, int* indices, Vector2f origin, Vector2f target, ColourbPremultiplied colour, float width,
 									 Vector2f top_left_texcoord, Vector2f bottom_right_texcoord, Vector2f scale, int index_offset, Vector2f offset);
 private:

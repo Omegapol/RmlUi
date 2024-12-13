@@ -3,7 +3,7 @@
 //
 
 #include "CandleGraph.h"
-#include "../../../Include/RmlUi/Core/GeometryUtilities.h"
+#include "RmlUi/Core/GeometryUtilities.h"
 
 Rml::GraphRenderMetadata Rml::CandleGraph::GenerateGeometryPart(Rml::Vertex *vertices, int *indices,
 											const Rml::CandleStickData &current, int index_offset, Rml::Colourb colour,
@@ -14,9 +14,9 @@ Rml::GraphRenderMetadata Rml::CandleGraph::GenerateGeometryPart(Rml::Vertex *ver
 	wick_colour.blue = 255;
 	auto wick_width = std::min((float) width / 12.f, 3.f);
 	wick_width = std::max(wick_width, 1.5f);
-	GeometryUtilities::GenerateLineGraph(vertices, indices, {(float) current.time, current.low},
+	MeshUtilities::GenerateLineGraph(vertices, indices, {(float) current.time, current.low},
 										 {(float) current.time, current.high},
-										 wick_colour, wick_width, Vector2f{}, Vector2f{}, scale, index_offset, offset);
+										 wick_colour.ToPremultiplied(), wick_width, Vector2f{}, Vector2f{}, scale, index_offset, offset);
 
 	if (current.entry < current.exit) {
 		colour.red = 0;
@@ -29,9 +29,9 @@ Rml::GraphRenderMetadata Rml::CandleGraph::GenerateGeometryPart(Rml::Vertex *ver
 	}
 	auto body_width = width;
 	body_width = std::max((float) body_width, 2.f);
-	GeometryUtilities::GenerateLineGraph(vertices + 4, indices + 6, {static_cast<float>(current.time), current.entry},
+	MeshUtilities::GenerateLineGraph(vertices + 4, indices + 6, {static_cast<float>(current.time), current.entry},
 										 {static_cast<float>(current.time), current.exit},
-										 colour, static_cast<float>(body_width), Vector2f{}, Vector2f{}, scale, index_offset + 4, offset);
+										 colour.ToPremultiplied(), static_cast<float>(body_width), Vector2f{}, Vector2f{}, scale, index_offset + 4, offset);
 
 	Rml::GraphRenderMetadata res;
 	res.vertices_delta=8;
@@ -42,8 +42,8 @@ Rml::GraphRenderMetadata Rml::CandleGraph::GenerateGeometryPart(Rml::Vertex *ver
 bool Rml::CandleGraph::IsPointWithinElement(Rml::Vector2f point) {
 	auto parent = GetParentNode();
 
-	auto transl = parent->GetAbsoluteOffset(Box::CONTENT).Round();
-	Vector2f quad_size = parent->GetBox().GetSize(Box::CONTENT).Round();
+	auto transl = parent->GetAbsoluteOffset(BoxArea::Content).Round();
+	Vector2f quad_size = parent->GetBox().GetSize(BoxArea::Content).Round();
 	if (point.x > transl.x && point.x < transl.x + quad_size.x &&
 		point.y > transl.y && point.y < transl.y + quad_size.y) {
 		auto view_point = ScreenPointToView(point, transl);

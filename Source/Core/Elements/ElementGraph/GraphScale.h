@@ -17,6 +17,11 @@
 namespace Rml {
 	class GraphScale : public ElementCanvasDrawable, public Element {
 	protected:
+		struct TexturedGeometry {
+			Geometry geometry;
+			Texture texture;
+		};
+		typedef Rml::Vector<TexturedGeometry> GeometryList;
 		Geometry geometry;
 		GeometryList text_geometry;
 		bool geometry_dirty;
@@ -33,10 +38,22 @@ namespace Rml {
 		void AddText(Vector2f v, String text, Colourb colour) {
 			FontFaceHandle font_face_handle = GetFontFaceHandle();
 			FontEffectsHandle font_effects_handle = 0;
-			GetFontEngineInterface()->GenerateString(font_face_handle, font_effects_handle, text,
-													 v, colour, text_geometry);
-			for (size_t i = 0; i < text_geometry.size(); ++i)
-				text_geometry[i].SetHostElement(this);
+			auto render_manager = this->GetRenderManager();
+			const auto& computed = GetComputedValues();
+			const TextShapingContext text_shaping_context{computed.language(), computed.direction(), computed.letter_spacing()};
+			TexturedMeshList text_meshes;
+			GetFontEngineInterface()->GenerateString(*render_manager,
+				font_face_handle,
+				font_effects_handle, text, v, colour.ToPremultiplied(), 0,
+				text_shaping_context, text_meshes);
+			if(text_meshes.size() > 1)
+			{
+				Log::Message(Log::LT_ERROR, "Too many geometry meshes generated");
+			}
+			TexturedGeometry geom;
+			geom.geometry = std::move(render_manager->MakeGeometry(std::move(text_meshes[0].mesh)));
+			geom.texture = text_meshes[0].texture;
+			text_geometry.emplace_back(std::move(geom));
 		}
 
 		float GetScaleInterval(Vector2f /*canvasSize*/, bool horizontal) {
@@ -68,14 +85,14 @@ namespace Rml {
 			geometry.Render(transl);
 
 			for (size_t i = 0; i < text_geometry.size(); ++i)
-				text_geometry[i].Render(transl);
+				text_geometry[i].geometry.Render(transl, text_geometry[i].texture);
 		}
 
 		void GenerateGeometry(Vector2f canvasSize) override {
 			// Release the old geometry before specifying the new vertices.
 			geometry.Release(Geometry::ReleaseMode::ClearMesh);
 			for (size_t i = 0; i < text_geometry.size(); ++i)
-				text_geometry[i].Release(Geometry::ReleaseMode::ClearMesh);
+				text_geometry[i].geometry.Release(Geometry::ReleaseMode::ClearMesh);
 
 			auto man = this->GetRenderManager();
 			auto mesh = Mesh();
@@ -120,13 +137,14 @@ namespace Rml {
 
 			//todo: width computation duplicated
 			auto width = 2.0;
-			auto computed_width = computed.width;
+			auto computed_width = computed.width();
 			if (computed_width.type == Style::Width::Length && computed_width.value != 0) {
 				width = computed_width.value;
 			}
 
-			Colourb colour = computed.color;
-			colour.alpha = (byte)(computed.opacity * (float) colour.alpha);
+			Colourb colour = computed.color();
+			colour.alpha = (byte)(computed.opacity() * (float) colour.alpha);
+			ColourbPremultiplied colour_premultiplied = colour.ToPremultiplied();
 			auto scale = Vector2f{ratios.x, ratios.y};
 			auto offset = Vector2f{view_x.x, view_y.x};
 
@@ -140,14 +158,15 @@ namespace Rml {
 			v2.y -= canvasSize.y;
 
 			auto idx = 0;
-			GeometryUtilities::GenerateLineGraph(&vertices[0] + idx * 4, &indices[0] + idx * 6,
+			Rml::MeshUtilities::GenerateLineGraph(&vertices[0] + idx * 4, &indices[0] + idx * 6,
 												 v1,
 												 v2,
-												 colour,
+												 colour_premultiplied,
 												 (float) width,
 												 Vector2f{}, Vector2f{},
 												 {1.0f, -1.0f},
-												 idx * 4);
+												 idx * 4,
+												 {});
 
 			auto offset2 = GetOffset(canvasSize);
 
@@ -169,12 +188,12 @@ namespace Rml {
 			}
 
 			FontFaceHandle font_face_handle = GetFontFaceHandle();
-			auto text_height = GetFontEngineInterface()->GetLineHeight(font_face_handle);
+			const TextShapingContext text_shaping_context{computed.language(), computed.direction(), computed.letter_spacing()};
+			auto text_height = GetLineHeight();
 			auto text_width = 0;
 			for (auto &label: labels) {
-				text_width = std::max(text_width,
-									  GetFontEngineInterface()->GetStringWidth(font_face_handle, label.text));
-			}
+				text_width = std::max(text_width, GetFontEngineInterface()->GetStringWidth(font_face_handle, label.text, text_shaping_context));
+			 }
 
 			double min_position = GetAttribute("left-margin", -0.5) * canvas_size;
 			double max_position = (1.0 - GetAttribute("right-margin", -0.5)) * canvas_size;
@@ -220,14 +239,15 @@ namespace Rml {
 					}
 
 					idx += 1;
-					GeometryUtilities::GenerateLineGraph(&vertices[0] + idx * 4, &indices[0] + idx * 6,
+					MeshUtilities::GenerateLineGraph(&vertices[0] + idx * 4, &indices[0] + idx * 6,
 														 v1,
 														 v2,
-														 colour,
+														 colour_premultiplied,
 														 (float) line_width,
 														 Vector2f{}, Vector2f{},
 														 {1.0f, 1.0f},
-														 idx * 4);
+														 idx * 4,
+														 {});
 				}
 			}
 			geometry = man->MakeGeometry(std::move(mesh));
