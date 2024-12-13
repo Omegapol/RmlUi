@@ -97,7 +97,7 @@ bool Variant::GetInto(T& value) const
 }
 
 template <typename T, typename std::enable_if<std::is_enum<T>::value && std::is_const<T>::value, int>::type>
-bool Variant::GetInto(T& value) const
+bool Variant::GetInto(T& /*value*/) const
 {
 	return false;
 }
