@@ -12,6 +12,7 @@
 #include "RmlUi/Core/Elements/ElementCanvasDrawable.h"
 #include "RmlUi/Core/Elements/ElementDataSink.h"
 #include "../common.h"
+#include <limits>
 
 
 namespace Rml {
@@ -107,8 +108,6 @@ namespace Rml {
 			this->data.clear();
 		}
 
-		auto size = 0;
-
 		auto x_viewed = view.x;
 
 		auto __vec = feed->GetData(x_viewed); //todo: visibility use here
@@ -125,11 +124,6 @@ namespace Rml {
 			first_idx = 0;
 		auto first = feed->GetElement(first_idx)[0]->data[0];
 		auto ratios = GetRatios(canvasSize);
-
-		for (auto &v: __vec) {
-			RMLUI_ASSERT(v->data.size() < std::numeric_limits<int>::max());
-			size += static_cast<int>(v->data.size());
-		}
 
 		const ComputedValues &computed = GetComputedValues();
 		float width = this->GetWidth();
