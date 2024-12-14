@@ -13,7 +13,7 @@
 static std::tm convert_time(std::time_t time_t)
 {
 	std::tm res;
-#ifdef WIN32 || defined(__MINGW32__)  || defined(__MINGW64__)
+#if defined(WIN32) || defined(__MINGW32__)  || defined(__MINGW64__)
 	gmtime_s(&res, &time_t);
 #else
 	gmtime_r(&time_t, &res);
