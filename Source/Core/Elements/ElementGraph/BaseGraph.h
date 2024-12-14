@@ -12,9 +12,6 @@
 #include "RmlUi/Core/Elements/ElementCanvasDrawable.h"
 #include "RmlUi/Core/Elements/ElementDataSink.h"
 #include "../common.h"
-#include "RmlUi/Core/Element.h"
-#include "RmlUi/Core/RenderManager.h"
-#include <limits>
 
 
 namespace Rml {
@@ -99,7 +96,7 @@ namespace Rml {
 		if (HasAttribute("static") && HasAttribute("data-source"))
 			Log::Message(Log::LT_ERROR, "Graph has two or more data sources defined!");
 		if (HasAttribute("static")) {
-			auto static_data = GetAttribute("static")->template Get<String>();
+			auto static_data = GetAttribute("static")->Get<String>();
 			UniquePtr<DataFeedBase<Vector2f>> new_ptr = std::move(TransformFeedString<Vector2f>(static_data));
 			DoDataTransform(std::move(new_ptr));
 		}
@@ -109,6 +106,8 @@ namespace Rml {
 		if (this->reset_all) {
 			this->data.clear();
 		}
+
+		auto size = 0;
 
 		auto x_viewed = view.x;
 
@@ -126,6 +125,12 @@ namespace Rml {
 			first_idx = 0;
 		auto first = feed->GetElement(first_idx)[0]->data[0];
 		auto ratios = GetRatios(canvasSize);
+
+		Vector2f offset = GetOffset(canvasSize);
+		RMLUI_ASSERT(v->data.size() < std::numeric_limits<int>::max());
+		for (auto &v: __vec) {
+			size += static_cast<int>(v->data.size());
+		}
 
 		const ComputedValues &computed = GetComputedValues();
 		float width = this->GetWidth();
@@ -251,14 +256,14 @@ namespace Rml {
 		auto transf_attrib = GetAttribute("transform");
 		auto transf = String("");
 		if(transf_attrib)
-			transf = transf_attrib->template Get<String>();
+			transf = transf_attrib->Get<String>();
 
 		DataFeedAggArguments args;
 		{
 			auto arg_attrib = GetAttribute("transf-step");
 			auto arg = 0.0;
 			if(arg_attrib)
-				arg = arg_attrib->template Get<double>();
+				arg = arg_attrib->Get<double>();
 			args.agg_size = arg;
 		}
 
@@ -277,7 +282,7 @@ namespace Rml {
 		auto transf_attrib = GetAttribute("transform");
 		auto transf = String("");
 		if(transf_attrib)
-			transf = transf_attrib->template Get<String>();
+			transf = transf_attrib->Get<String>();
 		feed = std::move(TransformFeed<InputType>(std::move(new_feed), transf, DataFeedAggArguments()));
 
 		geometry_dirty = true;
@@ -348,7 +353,7 @@ namespace Rml {
 		auto interval_attr = this->GetAttribute("interval");
 		auto interval = 5;
 		if (interval_attr) {
-			interval = interval_attr->template Get<int>();
+			interval = interval_attr->Get<int>();
 		}
 		return interval;
 	}

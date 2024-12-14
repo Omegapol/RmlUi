@@ -30,8 +30,6 @@
 #include "../../../Include/RmlUi/Core/URL.h"
 #include "ElementGraph/LineGraph.h"
 #include <RmlUi/Core/Traits.h>
-#include <RmlUi/Core.h>
-#include <limits>
 
 namespace Rml {
 
@@ -372,6 +370,8 @@ namespace Rml {
 	}
 
 	void ElementCanvas::ProcessEvent(Event &event) {
+		unsigned int i = 0;
+		++i;
 		if (event.GetId() == EventId::Mousedown) {
 			entry_mouse = event.GetUnprojectedMouseScreenPos();
 		}
