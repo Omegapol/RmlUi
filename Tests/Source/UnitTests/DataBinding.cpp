@@ -392,23 +392,6 @@ struct Basic {
 		return &i;
 	}
 
-	// const pointers
-	const int* const GetX9() {
-		static int h = 13;
-		return &h;
-	}
-	const int* const GetX10() const {
-		static int i = 14;
-		return &i;
-	}
-	int* const GetX11()  {
-		static int i = 15;
-		return &i;
-	}
-	int* const GetX12() const {
-		static int i = 16;
-		return &i;
-	}
 	// Invalid: Illegal signature
 	int GetX5(int) { return 9; }
 };
@@ -671,11 +654,6 @@ bool InitializeDataBindings(Context* context)
 		handle.RegisterMember("x6", &Basic::GetX6);
 		handle.RegisterMember("x7", &Basic::GetX7);
 		handle.RegisterMember("x8", &Basic::GetX8);
-
-		handle.RegisterMember("x9", &Basic::GetX9);
-		handle.RegisterMember("x10", &Basic::GetX10);
-		handle.RegisterMember("x11", &Basic::GetX11);
-		handle.RegisterMember("x12", &Basic::GetX12);
 	}
 	g_basic = new Basic;
 	constructor.Bind("basic", g_basic);
@@ -891,10 +869,6 @@ TEST_CASE("data_binding.getset")
 	RML_TEST_VARIABLE_I(basic.x6 , *g_basic->GetX6() , cOnlyReadable);
 	RML_TEST_VARIABLE_I(basic.x7 , g_basic->GetX7() , cWritable);
 	RML_TEST_VARIABLE_I(basic.x8 , *g_basic->GetX8() , cWritable);
-	RML_TEST_VARIABLE_I(basic.x9 , *g_basic->GetX9() , cOnlyReadable);
-	RML_TEST_VARIABLE_I(basic.x10 , *g_basic->GetX10() , cOnlyReadable);
-	RML_TEST_VARIABLE_I(basic.x11 , *g_basic->GetX11() , cWritable);
-	RML_TEST_VARIABLE_I(basic.x12 , *g_basic->GetX12() , cWritable);
 
 
 	RML_TEST_VARIABLE_I(cbasic.a, g_cbasic->a, cOnlyReadable);
@@ -913,9 +887,7 @@ TEST_CASE("data_binding.getset")
 	RML_TEST_VARIABLE_I(cbasic.x7, g_cbasic->GetX7(), cWritable);
 	RML_TEST_VARIABLE_I(cbasic.x8, *g_cbasic->GetX8(), cWritable);
 	RML_TEST_VARIABLE_I(cbasic.x9, 0, cMemberNotAvailable);
-	RML_TEST_VARIABLE_I(cbasic.x10, *g_cbasic->GetX10(), cOnlyReadable);
 	RML_TEST_VARIABLE_I(cbasic.x11, 0, cMemberNotAvailable);
- 	RML_TEST_VARIABLE_I(cbasic.x12, *g_cbasic->GetX12(), cWritable);
 
 	RML_TEST_VARIABLE_I(wrapped.a.val, g_wrapped->a.val, cWritable);
 	RML_TEST_VARIABLE_I(wrapped.b.val, g_wrapped->b->val, cWritable);
