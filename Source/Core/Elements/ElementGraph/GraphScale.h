@@ -148,7 +148,6 @@ namespace Rml {
 			colour.alpha = (byte)(computed.opacity() * (float) colour.alpha);
 			ColourbPremultiplied colour_premultiplied = colour.ToPremultiplied();
 			auto scale = Vector2f{ratios.x, ratios.y};
-			auto offset = Vector2f{view_x.x, view_y.x};
 
 			auto v1 = Vector2f{0, 10};
 			auto v2 = Vector2f{canvasSize.x, 10};

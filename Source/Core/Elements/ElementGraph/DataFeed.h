@@ -9,6 +9,8 @@
 #include "../common.h"
 #include "DataGraphTypes.h"
 #include "RmlUi/Core/Elements/DataFeedBase.h"
+#include <cstring>
+#include <limits>
 
 #include "DataFeedTypeCheck.h"
 

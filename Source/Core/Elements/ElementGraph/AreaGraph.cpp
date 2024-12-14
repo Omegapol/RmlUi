@@ -4,6 +4,7 @@
 
 #include "AreaGraph.h"
 #include "RmlUi/Core/GeometryUtilities.h"
+#include <cmath>
 
 float FindYCrossing(const Rml::Vector2f &a, const Rml::Vector2f &b) {
 	auto delta_x = b.x - a.x;

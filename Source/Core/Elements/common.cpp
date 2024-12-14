@@ -3,6 +3,7 @@
 //
 
 #include "common.h"
+#include <cmath>
 
 namespace Rml {
 	StringList split(String text, const String &delim) //todo: move it to common funcs
