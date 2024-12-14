@@ -39,6 +39,7 @@
 #include "DataExpression.h"
 #include "DataModel.h"
 #include "XMLParseTools.h"
+#include <RmlUi/Core/Traits.h>
 
 namespace Rml {
 
@@ -142,7 +143,7 @@ bool DataViewAttributeIf::Update(DataModel& model)
 }
 DataViewSource::DataViewSource(Element* element) : DataViewCommon(element)
 {
-	auto ptr = dynamic_cast<ElementDataSink*>(element);
+	auto ptr = rmlui_dynamic_cast<ElementDataSink*>(element);
 	if (!ptr)
 		Log::Message(Log::LT_ERROR, "Given element can't be fed with data");
 
@@ -164,7 +165,7 @@ bool DataViewSource::Initialize(DataModel& model, Element* element, const String
 
 bool DataViewSource::Update(DataModel& model)
 {
-	auto ptr = dynamic_cast<ElementDataSink*>(this->GetElement());
+	auto ptr = rmlui_dynamic_cast<ElementDataSink*>(this->GetElement());
 	if(ptr)
 	{
 		//todo: use only one address

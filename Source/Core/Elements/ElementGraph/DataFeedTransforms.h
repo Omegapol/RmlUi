@@ -21,13 +21,13 @@ namespace Rml {
 											   const String &transform_str,
 											   DataFeedAggArguments args);
 
-		private:
-
 			virtual void *get_raw(void * /*raw_feed*/, DataFeedAggArguments /*args*/) {
 				return nullptr;
 			};
 
 		public:
+			virtual ~FeedTransformFactoryBase() = default;
+
 			virtual String GetName() = 0;
 
 			virtual void GetId(FamilyId &input, FamilyId &output) {

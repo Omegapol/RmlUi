@@ -31,6 +31,10 @@
 
 #include "Header.h"
 #include "Types.h"
+#include "Mesh.h"
+#include "Vertex.h"
+#include "Math.h"
+
 
 namespace Rml {
 

@@ -127,7 +127,7 @@ private:
 
 	// Member getter with pointer return type.
 	template <typename ReturnType>
-	bool RegisterMemberGetter(const String& name, ReturnType* const (Object::* member_get_func_ptr)()) {
+	bool RegisterMemberGetter(const String& name, ReturnType const*  (Object::* member_get_func_ptr)()) {
 		return CreateMemberGetFuncDefinition<ReturnType>(name, member_get_func_ptr);
 	}
 
@@ -150,7 +150,7 @@ private:
 	}
 
 	template <typename ReturnType>
-	bool RegisterMemberGetter(const String& name, ReturnType* const (Object::* member_get_func_ptr)() const) {
+	bool RegisterMemberGetter(const String& name, ReturnType const*  (Object::* member_get_func_ptr)() const) {
 		return CreateMemberGetFuncDefinitionConst<ReturnType>(name, member_get_func_ptr);
 	}
 

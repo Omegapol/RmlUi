@@ -7,6 +7,7 @@
 
 #include "DataFeed.h"
 #include "DataGraphTypes.h"
+#include <cmath>
 
 namespace Rml {
 

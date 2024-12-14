@@ -4,6 +4,7 @@
 
 #include "CandleBarGraph.h"
 #include "RmlUi/Core/GeometryUtilities.h"
+#include "RmlUi/Core/MeshUtilities.h"
 
 Rml::GraphRenderMetadata Rml::CandleBarGraph::GenerateGeometryPart(Rml::Vertex *vertices, int *indices,
 											   const Rml::CandleStickData &current, int index_offset, Rml::Colourb colour,

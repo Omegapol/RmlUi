@@ -9,6 +9,8 @@
 #include "../common.h"
 #include "DataGraphTypes.h"
 #include "RmlUi/Core/Elements/DataFeedBase.h"
+#include <cstring>
+#include <limits>
 
 #include "DataFeedTypeCheck.h"
 
@@ -219,7 +221,6 @@ namespace Rml {
 
 		if(!this->cached.empty() && !this->cached[0]->data.empty()) {
 			auto prev = this->cached[0]->data[0];
-			auto last_end = 0u;
 
 			//check each chunk if it contains values close to x
 			for (const Rml::SharedPtr<Chunk> &cached_chunk: this->cached) {
@@ -239,7 +240,6 @@ namespace Rml {
 					}
 				}
 				prev = cached_chunk->data[cached_chunk->data.size() - 1];
-				last_end = cached_chunk->end;
 			}
 		}
 		//todo: can we do it?
@@ -371,7 +371,10 @@ namespace Rml {
 
 	template<typename DataType>
 	int DataFeedString<DataType>::Size() {
-		return cached.size();
+		// DataAddressEntry can be either int or string, so we have to use int for indexing elements
+		auto size = cached.size();
+		RMLUI_ASSERT(size < std::numeric_limits<int>::max());
+		return static_cast<int>(size);
 	}
 
 	template<typename DataType>

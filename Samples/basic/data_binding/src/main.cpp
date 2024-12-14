@@ -229,7 +229,7 @@ namespace InvadersExample {
 			return false;
 
 		// Register a custom getter for the Colourb type.
-		constructor.RegisterScalar<Rml::Colourb>([](const Rml::Colourb& color, Rml::Variant& variant) { variant = Rml::ToString(color); });
+		constructor.RegisterScalar<Rml::Colourb>([](const Rml::Colourb* color, Rml::Variant& variant) { variant = Rml::ToString(*color); });
 		// Register a transform function for formatting time
 		constructor.RegisterTransformFunc("format_time", [](const Rml::VariantList& arguments) -> Rml::Variant {
 			if (arguments.empty())

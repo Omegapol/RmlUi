@@ -57,8 +57,8 @@ bool Rml::CandleGraph::IsPointWithinElement(Rml::Vector2f point) {
 		auto first = vec[0];
 		auto second = vec[1];
 
-		return view_point.y < first.high && view_point.y > first.low ||
-			   view_point.y < second.high && view_point.y > second.low;
+		return (view_point.y < first.high && view_point.y > first.low )||
+			   (view_point.y < second.high && view_point.y > second.low);
 	}
 	return false;
 }

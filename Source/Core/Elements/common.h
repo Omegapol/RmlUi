@@ -5,6 +5,7 @@
 #ifndef RMLUI_COMMON_H
 #define RMLUI_COMMON_H
 
+#include <RmlUi/Core/Types.h>
 #include "../../../Include/RmlUi/Config/Config.h"
 
 namespace Rml {

@@ -33,6 +33,7 @@
 #include "RmlUi/Core/Element.h"
 #include "RmlUi/Core/Geometry.h"
 #include "RmlUi/Core/Texture.h"
+#include "RmlUi/Core/EventListener.h"
 #include "ElementCanvasDrawable.h"
 
 namespace Rml {
