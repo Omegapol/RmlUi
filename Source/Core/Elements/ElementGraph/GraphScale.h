@@ -8,11 +8,13 @@
 #include "BaseGraph.h"
 
 #include "RmlUi/Core/Core.h"
-#include "RmlUi/Core/Context.h"
+#include "RmlUi/Core/MeshUtilities.h"
 #include "RmlUi/Core/FontEngineInterface.h"
 
 #include "RmlUi/Core/GeometryUtilities.h"
 #include "RmlUi/Core/Elements/GraphFormatters.h"
+
+#include <cmath>
 
 namespace Rml {
 	class GraphScale : public ElementCanvasDrawable, public Element {
@@ -51,7 +53,7 @@ namespace Rml {
 				Log::Message(Log::LT_ERROR, "Too many geometry meshes generated");
 			}
 			TexturedGeometry geom;
-			geom.geometry = std::move(render_manager->MakeGeometry(std::move(text_meshes[0].mesh)));
+			geom.geometry = render_manager->MakeGeometry(std::move(text_meshes[0].mesh));
 			geom.texture = text_meshes[0].texture;
 			text_geometry.emplace_back(std::move(geom));
 		}

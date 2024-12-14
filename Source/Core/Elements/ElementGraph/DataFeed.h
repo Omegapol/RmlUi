@@ -219,7 +219,6 @@ namespace Rml {
 
 		if(!this->cached.empty() && !this->cached[0]->data.empty()) {
 			auto prev = this->cached[0]->data[0];
-			auto last_end = 0u;
 
 			//check each chunk if it contains values close to x
 			for (const Rml::SharedPtr<Chunk> &cached_chunk: this->cached) {
@@ -239,7 +238,6 @@ namespace Rml {
 					}
 				}
 				prev = cached_chunk->data[cached_chunk->data.size() - 1];
-				last_end = cached_chunk->end;
 			}
 		}
 		//todo: can we do it?
