@@ -100,7 +100,7 @@ namespace Rml {
 			Log::Message(Log::LT_ERROR, "Graph has two or more data sources defined!");
 		if (HasAttribute("static")) {
 			auto static_data = GetAttribute("static")->template Get<String>();
-			UniquePtr<DataFeedBase<Vector2f>> new_ptr = std::move(TransformFeedString<Vector2f>(static_data));
+			UniquePtr<DataFeedBase<Vector2f>> new_ptr = TransformFeedString<Vector2f>(static_data);
 			DoDataTransform(std::move(new_ptr));
 		}
 		if (!feed)
