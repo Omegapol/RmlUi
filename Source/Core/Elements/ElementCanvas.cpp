@@ -372,8 +372,6 @@ namespace Rml {
 	}
 
 	void ElementCanvas::ProcessEvent(Event &event) {
-		unsigned int i = 0;
-		++i;
 		if (event.GetId() == EventId::Mousedown) {
 			entry_mouse = event.GetUnprojectedMouseScreenPos();
 		}

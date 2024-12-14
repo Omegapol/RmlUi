@@ -11,9 +11,9 @@ namespace Rml {
 	template<typename DataType, typename OutputType>
 	struct DefaultAgg {
 	public:
-		static void Finish(OutputType &res, DataType first, DataType end, int count) {};
+		static void Finish(OutputType &/*res*/, DataType /*first*/, DataType /*end*/, int /*count*/) {};
 
-		static void Init(OutputType &res, DataType first) {};
+		static void Init(OutputType &/*res*/, DataType /*first*/) {};
 	};
 
 	template<typename InputType, typename OutputType, typename AggClass>
