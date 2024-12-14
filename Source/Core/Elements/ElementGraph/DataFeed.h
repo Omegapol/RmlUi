@@ -208,7 +208,7 @@ namespace Rml {
 	template<>
 	inline Vector2f DataFeed<Vector2f>::GetFrom(Rml::DataVariable var) {
 		Variant tmp;
-		float x, y;
+		float x = 0, y = 0;
 		var.Child(String("x")).Get(tmp);
 		tmp.GetInto(x);
 		var.Child(String("y")).Get(tmp);
@@ -299,7 +299,7 @@ namespace Rml {
 	template<>
 	inline Vector4f DataFeed<Vector4f>::GetFrom(Rml::DataVariable var) {
 		Variant tmp;
-		float h, l, en, ex;
+		float h = 0, l = 0, en = 0, ex = 0;
 		var.Child(String("h")).Get(tmp);
 		tmp.GetInto(h);
 		var.Child(String("l")).Get(tmp);
@@ -314,8 +314,8 @@ namespace Rml {
 	template<>
 	inline CandleStickData DataFeed<CandleStickData>::GetFrom(Rml::DataVariable var) {
 		Variant tmp;
-		float h, l, en, ex;
-		double time;
+		float h = 0, l = 0, en = 0, ex = 0;
+		double time = 0;
 		var.Child(String("h")).Get(tmp);
 		tmp.GetInto(h);
 		var.Child(String("l")).Get(tmp);
@@ -373,7 +373,7 @@ namespace Rml {
 	int DataFeedString<DataType>::Size() {
 		// DataAddressEntry can be either int or string, so we have to use int for indexing elements
 		auto size = cached.size();
-		RMLUI_ASSERT(size < std::numeric_limits<int>::max());
+		RMLUI_ASSERT(size < static_cast<size_t>(std::numeric_limits<int>::max()));
 		return static_cast<int>(size);
 	}
 

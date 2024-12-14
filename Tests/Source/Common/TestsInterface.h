@@ -33,12 +33,13 @@
 #include <RmlUi/Core/RenderInterface.h>
 #include <RmlUi/Core/SystemInterface.h>
 #include <Shell.h>
+#include <stdexcept>
 
 
-class TestException: public std::exception
+class TestException: public std::runtime_error
 {
 public:
-	TestException(const char *string);
+	TestException(const char *c_string);
 };
 
 extern bool rml_stop_on_asserts;

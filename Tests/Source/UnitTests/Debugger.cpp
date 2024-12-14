@@ -104,7 +104,7 @@ TEST_CASE("debugger.unload_documents")
 	TestsShell::RenderLoop();
 
 	// Closing documents from the debugger plugin is not allowed.
-	TestsShell::SetNumExpectedErrors(1);
+	TestsShell::SetNumExpectedWarnings(1);
 
 	SUBCASE("UnloadDocument")
 	{

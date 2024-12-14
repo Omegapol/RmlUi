@@ -32,7 +32,7 @@ namespace Rml {
 	};
 
 	template <typename InputType>
-	class BaseGraphImpl : public ElementCanvasDrawable, public ElementDataSink, public Element {
+	class BaseGraphImpl : public ElementCanvasDrawable {
 		using DataFeedType = DataFeedBase<InputType>;
 
 	protected:
@@ -45,7 +45,9 @@ namespace Rml {
 
 		bool reset_all = true;
 	public:
-		virtual ~BaseGraphImpl();
+		RMLUI_RTTI_DefineWithParent(BaseGraphImpl, ElementCanvasDrawable)
+
+		~BaseGraphImpl() override;
 
 		BaseGraphImpl(const String &tag);
 
@@ -100,7 +102,7 @@ namespace Rml {
 			Log::Message(Log::LT_ERROR, "Graph has two or more data sources defined!");
 		if (HasAttribute("static")) {
 			auto static_data = GetAttribute("static")->template Get<String>();
-			UniquePtr<DataFeedBase<Vector2f>> new_ptr = std::move(TransformFeedString<Vector2f>(static_data));
+			UniquePtr<DataFeedBase<Vector2f>> new_ptr = TransformFeedString<Vector2f>(static_data);
 			DoDataTransform(std::move(new_ptr));
 		}
 		if (!feed)
@@ -208,7 +210,7 @@ namespace Rml {
 	}
 
 	template <typename InputType>
-	BaseGraphImpl<InputType>::BaseGraphImpl(const String &tag): Element(tag) {
+	BaseGraphImpl<InputType>::BaseGraphImpl(const String &tag): ElementCanvasDrawable(tag) {
 
 	}
 

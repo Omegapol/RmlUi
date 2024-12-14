@@ -5,6 +5,7 @@
 #ifndef RMLUI_ELEMENTCANVASDRAWABLE_H
 #define RMLUI_ELEMENTCANVASDRAWABLE_H
 
+#include "ElementDataSink.h"
 #include <RmlUi/Core/Types.h>
 
 namespace Rml {
@@ -13,10 +14,13 @@ namespace Rml {
 		Vector2f y;
 	};
 
-	class RMLUICORE_API ElementCanvasDrawable {
+	class RMLUICORE_API ElementCanvasDrawable: public ElementDataSink {
 	protected:
 		CanvasView view;
 	public:
+		RMLUI_RTTI_DefineWithParent(ElementCanvasDrawable, ElementDataSink)
+		using ElementDataSink::ElementDataSink;
+
 		virtual Vector2f ScreenPointToView(const Vector2f& screen_pt, const Vector2f& transl);
 
 		virtual void RenderOnCanvas(Vector2f canvas_size, Vector2f transl) = 0;

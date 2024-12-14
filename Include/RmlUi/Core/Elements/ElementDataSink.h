@@ -6,10 +6,14 @@
 #define RMLUI_ELEMENTDATASINK_H
 
 #include <RmlUi/Core/DataVariable.h>
+#include <RmlUi/Core/Element.h>
 
 namespace Rml {
-	class ElementDataSink {
+	class RMLUICORE_API ElementDataSink: public Element{
 	public:
+		RMLUI_RTTI_DefineWithParent(ElementDataSink, Element)
+		using Element::Element;
+
 		virtual bool FeedData(DataVariable data) = 0;
 	};
 }

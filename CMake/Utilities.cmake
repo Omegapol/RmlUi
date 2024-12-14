@@ -79,7 +79,7 @@ function(set_common_target_options target)
 		endif()
 
 		if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-			#target_compile_options(${target} PRIVATE -Werror)
+			target_compile_options(${target} PRIVATE -Werror)
 		elseif(MSVC)
 			target_compile_options(${target} PRIVATE /WX)
 		else()

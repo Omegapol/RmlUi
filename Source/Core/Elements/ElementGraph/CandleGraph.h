@@ -11,6 +11,7 @@
 namespace Rml {
 	class CandleGraph : public BaseGraphImpl<CandleStickData> {
 	public:
+		RMLUI_RTTI_DefineWithParent(CandleGraph, BaseGraphImpl<CandleStickData>)
 		explicit CandleGraph(const String& tag): BaseGraphImpl<CandleStickData>(tag)
 		{};
 

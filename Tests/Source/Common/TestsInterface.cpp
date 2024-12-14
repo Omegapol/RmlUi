@@ -264,6 +264,6 @@ void TestsRenderInterface::VerifyMeshes()
 	}
 }
 
-TestException::TestException(const char *string) : exception(string) {
+TestException::TestException(const char *c_string) : std::runtime_error(std::string(c_string)) {
 
 }
