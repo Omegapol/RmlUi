@@ -5,7 +5,7 @@
 #ifndef RMLUI_ELEMENTCANVASDRAWABLE_H
 #define RMLUI_ELEMENTCANVASDRAWABLE_H
 
-#include <RmlUi/Core/Math.h>
+#include <RmlUi/Core/Types.h>
 
 namespace Rml {
 	struct CanvasView {
