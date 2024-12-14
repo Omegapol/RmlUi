@@ -17,7 +17,7 @@
 #include <cmath>
 
 namespace Rml {
-	class GraphScale : public ElementCanvasDrawable, public Element {
+	class GraphScale : public ElementCanvasDrawable {
 	protected:
 		struct TexturedGeometry {
 			Geometry geometry;
@@ -28,6 +28,7 @@ namespace Rml {
 		GeometryList text_geometry;
 		bool geometry_dirty;
 	public:
+		RMLUI_RTTI_DefineWithParent(GraphScale, ElementCanvasDrawable)
 		void DirtyCanvas() override {
 
 		}
@@ -75,7 +76,12 @@ namespace Rml {
 		}
 
 	public:
-		GraphScale(const String &tag) : Element(tag) {};
+		GraphScale(const String &tag) : ElementCanvasDrawable(tag), geometry_dirty(false) {};
+		bool FeedData(DataVariable /*data*/) override
+		{
+			Log::Message(Log::LT_ERROR, "This element doesn't support feeding into it data!");
+			return false;
+		}
 
 		Vector2f GetCanvasSize() override {
 			auto parent = GetParentNode();

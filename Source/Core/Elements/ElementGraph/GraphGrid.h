@@ -10,6 +10,7 @@
 namespace Rml {
 	class GraphGrid : public GraphScale {
 	public:
+		RMLUI_RTTI_DefineWithParent(GraphGrid, GraphScale)
 		GraphGrid(const String& tag);
 		void GenerateGeometry(Vector2f canvasSize) override;
 	};

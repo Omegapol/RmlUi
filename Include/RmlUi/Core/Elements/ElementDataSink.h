@@ -9,10 +9,10 @@
 #include <RmlUi/Core/Element.h>
 
 namespace Rml {
-	class ElementDataSink {
+	class ElementDataSink: public Element{
 	public:
-		virtual ~ElementDataSink() = default;
 		RMLUI_RTTI_DefineWithParent(ElementDataSink, Element)
+		using Element::Element;
 
 		virtual bool FeedData(DataVariable data) = 0;
 	};

@@ -11,6 +11,7 @@
 namespace Rml {
 	class LineGraph : public BaseGraphImpl<Vector2f> {
 	public:
+		RMLUI_RTTI_DefineWithParent(CandleGraph, BaseGraphImpl<Vector2f>)
 		void GenerateGeometryInit() override;
 		void GenerateGeometryStart(const Vector2<float> &from) override;
 

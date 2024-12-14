@@ -32,7 +32,7 @@ namespace Rml {
 	};
 
 	template <typename InputType>
-	class BaseGraphImpl : public ElementCanvasDrawable, public ElementDataSink, public Element {
+	class BaseGraphImpl : public ElementCanvasDrawable {
 		using DataFeedType = DataFeedBase<InputType>;
 
 	protected:
@@ -45,7 +45,9 @@ namespace Rml {
 
 		bool reset_all = true;
 	public:
-		virtual ~BaseGraphImpl();
+		RMLUI_RTTI_DefineWithParent(BaseGraphImpl, ElementCanvasDrawable)
+
+		~BaseGraphImpl() override;
 
 		BaseGraphImpl(const String &tag);
 
@@ -208,7 +210,7 @@ namespace Rml {
 	}
 
 	template <typename InputType>
-	BaseGraphImpl<InputType>::BaseGraphImpl(const String &tag): Element(tag) {
+	BaseGraphImpl<InputType>::BaseGraphImpl(const String &tag): ElementCanvasDrawable(tag) {
 
 	}
 
