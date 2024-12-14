@@ -30,6 +30,7 @@
 #include "../../../Include/RmlUi/Core/URL.h"
 #include "ElementGraph/LineGraph.h"
 #include <RmlUi/Core/Traits.h>
+#include <RmlUi/Core.h>
 #include <limits>
 
 namespace Rml {

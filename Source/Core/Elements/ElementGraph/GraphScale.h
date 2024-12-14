@@ -105,7 +105,7 @@ namespace Rml {
 			auto isHorizontal = GetAttribute("horizontal", String("true")) == "true";
 
 			auto view_x = view.x;
-			auto view_y = view.y;
+			// auto view_y = view.y;
 			auto l_view = view_x;
 			auto view_width = (l_view.y - l_view.x);
 			auto ratios = GetRatios(canvasSize);

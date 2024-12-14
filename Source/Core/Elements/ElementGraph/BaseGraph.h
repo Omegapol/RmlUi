@@ -12,6 +12,8 @@
 #include "RmlUi/Core/Elements/ElementCanvasDrawable.h"
 #include "RmlUi/Core/Elements/ElementDataSink.h"
 #include "../common.h"
+#include "RmlUi/Core/Element.h"
+#include "RmlUi/Core/RenderManager.h"
 #include <limits>
 
 
