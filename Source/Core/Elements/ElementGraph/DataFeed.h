@@ -373,7 +373,7 @@ namespace Rml {
 	int DataFeedString<DataType>::Size() {
 		// DataAddressEntry can be either int or string, so we have to use int for indexing elements
 		auto size = cached.size();
-		RMLUI_ASSERT(size < std::numeric_limits<int>::max());
+		RMLUI_ASSERT(size < static_cast<size_t>(std::numeric_limits<int>::max()));
 		return static_cast<int>(size);
 	}
 
