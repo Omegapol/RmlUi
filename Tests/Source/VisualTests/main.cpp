@@ -40,7 +40,8 @@
 #include <Shell.h>
 #include <stdio.h>
 #include <RmlUi/Core/DataModelHandle.h>
-
+#include <../Source/Core/Elements/ElementGraph/DataGraphTypes.h>
+#include <cmath>
 
 Rml::Context* context = nullptr;
 TestNavigator* g_navigator = nullptr;
