@@ -17,6 +17,7 @@ namespace Rml {
 	protected:
 		CanvasView view;
 	public:
+		virtual ~ElementCanvasDrawable() = default;
 		RMLUI_RTTI_DefineWithParent(ElementCanvasDrawable, Element)
 
 		virtual Vector2f ScreenPointToView(const Vector2f& screen_pt, const Vector2f& transl);
