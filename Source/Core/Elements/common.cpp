@@ -33,7 +33,7 @@ namespace Rml {
 	float distanceFromSegment(const Vector2f& line_point_a, const Vector2f& line_point_b,  const Vector2f& point)
 	{
 		const auto line_vector = line_point_b - line_point_a;
-		auto lv_length2 = std::pow(line_vector.Magnitude(), 2);
+		auto lv_length2 = static_cast<float>(std::pow(line_vector.Magnitude(), 2));
 		if(lv_length2 == 0)
 			return (point - line_point_a).Magnitude();
 

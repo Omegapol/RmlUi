@@ -127,8 +127,9 @@ namespace Rml {
 		auto ratios = GetRatios(canvasSize);
 
 		Vector2f offset = GetOffset(canvasSize);
+		RMLUI_ASSERT(v->data.size() < std::numeric_limits<int>::max());
 		for (auto &v: __vec) {
-			size += v->data.size();
+			size += static_cast<int>(v->data.size());
 		}
 
 		const ComputedValues &computed = GetComputedValues();
@@ -179,7 +180,8 @@ namespace Rml {
 			Vector<int> &indices = mesh.indices;
 
 			// Release the old geometry before specifying the new vertices.
-			GraphRenderMetadata meta = GetMetadata(vec.size());
+			RMLUI_ASSERT(vec.size() < std::numeric_limits<unsigned int>::max());
+			GraphRenderMetadata meta = GetMetadata(static_cast<unsigned int>(vec.size()));
 
 			// generate only if there is anything to be parsed
 			if (meta.target_size != 0) {

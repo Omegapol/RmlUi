@@ -371,7 +371,10 @@ namespace Rml {
 
 	template<typename DataType>
 	int DataFeedString<DataType>::Size() {
-		return cached.size();
+		// DataAddressEntry can be either int or string, so we have to use int for indexing elements
+		auto size = cached.size();
+		RMLUI_ASSERT(size < std::numeric_limits<int>::max());
+		return static_cast<int>(size);
 	}
 
 	template<typename DataType>

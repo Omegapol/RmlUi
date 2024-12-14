@@ -29,6 +29,7 @@
 #include "../../../Include/RmlUi/Core/Elements/ElementCanvas.h"
 #include "../../../Include/RmlUi/Core/URL.h"
 #include "ElementGraph/LineGraph.h"
+#include <RmlUi/Core/Traits.h>
 
 namespace Rml {
 
@@ -104,7 +105,7 @@ namespace Rml {
 
 		for (auto i = 0; i < GetNumChildren(true); ++i) {
 			auto child = GetChild(i);
-			auto ptr = dynamic_cast<ElementCanvasDrawable *>(child);
+			auto ptr = rmlui_dynamic_cast<ElementCanvasDrawable *>(child);
 			if (ptr) {
 				ptr->RenderOnCanvas(quad_size, transl);
 			}
@@ -271,7 +272,7 @@ namespace Rml {
 
 		for (auto i = 0; i < GetNumChildren(true); ++i) {
 			auto child = GetChild(i);
-			auto ptr = dynamic_cast<ElementCanvasDrawable *>(child);
+			auto ptr = rmlui_dynamic_cast<ElementCanvasDrawable *>(child);
 			if (ptr) {
 				ptr->SetView(view);
 				ptr->GenerateGeometry(quad_size);

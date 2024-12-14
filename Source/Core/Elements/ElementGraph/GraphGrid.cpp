@@ -42,7 +42,7 @@ void Rml::GraphGrid::GenerateGeometry(Rml::Vector2f canvasSize) {
 	}
 
 	Colourb colour = computed.color();
-	ColourbPremultiplied colour_premultiplied = ColourbPremultiplied(colour.red, colour.green, colour.red, (computed.opacity() * (float) colour.alpha));
+	ColourbPremultiplied colour_premultiplied = ColourbPremultiplied(colour.red, colour.green, colour.red, static_cast<unsigned char>(computed.opacity() * (float) colour.alpha));
 	colour.alpha = (byte) (computed.opacity() * (float) colour.alpha);
 	auto scale = Vector2f{view_width / canvasSize.x, -1.0f};
 	scale = GetRatios(canvasSize);
