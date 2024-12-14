@@ -1035,9 +1035,10 @@ TEST_CASE("data_binding.set_enum")
 	Context* context = TestsShell::GetContext();
 	REQUIRE(context);
 
+	REQUIRE(InitializeDataBindings(context));
+
 	globals->simple = Simple_One;
 
-	REQUIRE(InitializeDataBindings(context));
 
 	ElementDocument* document = context->LoadDocumentFromMemory(set_enum_rml);
 	REQUIRE(document);
