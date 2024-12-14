@@ -40,8 +40,8 @@
 #include <Shell.h>
 #include <stdio.h>
 #include <RmlUi/Core/DataModelHandle.h>
+#include <RmlUi/Core/Math.h>
 #include <../Source/Core/Elements/ElementGraph/DataGraphTypes.h>
-#include <cmath>
 
 Rml::Context* context = nullptr;
 TestNavigator* g_navigator = nullptr;
@@ -233,7 +233,7 @@ int main(int argc, char** argv)
 	static auto vec4 = new Rml::Vector<Rml::Vector2f>{};
 	for(auto i = 0; i< 10000; ++i)
 	{
-		auto res = std::sinf((float) i / 5.f) + i/35.f;
+		auto res = Rml::Math::Sin((float) i / 5.f) + i/35.f;
 		vec4->push_back({(float)i, res*15.f});
 	}
 	constructor.Bind("sine", vec4);
