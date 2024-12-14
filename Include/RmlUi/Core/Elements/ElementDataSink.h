@@ -9,7 +9,7 @@
 #include <RmlUi/Core/Element.h>
 
 namespace Rml {
-	class ElementDataSink: public Element{
+	class RMLUICORE_API ElementDataSink: public Element{
 	public:
 		RMLUI_RTTI_DefineWithParent(ElementDataSink, Element)
 		using Element::Element;
