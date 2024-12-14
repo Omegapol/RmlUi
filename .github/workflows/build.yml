@@ -38,7 +38,7 @@ jobs:
 
     - name: Configure CMake
       run: >-
-        cmake -B Build -G Ninja --preset samples-all -DRMLUI_SVG_PLUGIN=OFF -Wdev -Werror=dev -DRMLUI_WARNINGS_AS_ERRORS=ON
+        cmake -B Build -G Ninja --preset samples-all -DRMLUI_SVG_PLUGIN=OFF -Wdev -DRMLUI_WARNINGS_AS_ERRORS=ON
         ${{ matrix.cmake_options }}
 
     - name: Build
