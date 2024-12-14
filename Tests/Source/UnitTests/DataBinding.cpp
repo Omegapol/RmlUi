@@ -119,11 +119,6 @@ static const String document_rml = R"(
 <p>{{ basic.x7 }}</p>
 <p>{{ basic.x8 }}</p>
 
-<p>{{ basic.x9 }}</p>
-<p>{{ basic.x10 }}</p>
-<p>{{ basic.x11 }}</p>
-<p>{{ basic.x12 }}</p>
-
 <h1>const Basic</h1>
 <p>{{ cbasic.a }}</p>
 <p>{{ cbasic.b }}</p>
@@ -140,10 +135,6 @@ static const String document_rml = R"(
 <p>{{ cbasic.x6 }}</p>
 <p>{{ cbasic.x7 }}</p>
 <p>{{ cbasic.x8 }}</p>
-<!--<p>{{ cbasic.x9 }}</p> invalid for const object-->
-<p>{{ cbasic.x10 }}</p>
-<!--<p>{{ cbasic.x11 }}</p> invalid for const object-->
-<p>{{ cbasic.x12 }}</p>
 
 <h1>Wrapped</h1>
 <p>{{ wrapped.a.val }}</p>
